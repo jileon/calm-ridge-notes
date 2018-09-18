@@ -8,4 +8,6 @@ const noteSchema = new mongoose.Schema({
 // Add `createdAt` and `updatedAt` fields
 noteSchema.set('timestamps', true);
 
+
+
 module.exports = mongoose.model('Note', noteSchema);
