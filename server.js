@@ -1,9 +1,9 @@
 'use strict';
-
+const mongoose = require('mongoose');
 const express = require('express');
 const morgan = require('morgan');
 
-const { PORT } = require('./config');
+onst { PORT, MONGODB_URI } = require('./config');
 
 const notesRouter = require('./routes/notes');
 
@@ -40,6 +40,23 @@ app.use((err, req, res, next) => {
     console.error(err);
     res.status(500).json({ message: 'Internal Server Error' });
   }
+});
+
+
+//Connect Mongoose
+mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
+  .catch(err => {
+    console.error(`ERROR: ${err.message}`);
+    console.error('\n === Did you remember to start `mongod`? === \n');
+    console.error(err);
+  });
+
+  
+
+app.listen(PORT, function () {
+  console.info(`Server listening on ${this.address().port}`);
+}).on('error', err => {
+  console.error(err);
 });
 
 // Listen for incoming connections
