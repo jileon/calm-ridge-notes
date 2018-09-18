@@ -10,15 +10,19 @@ const Note = require('../models/note');
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
   const { searchTerm } = req.query;
+ 
+  const searchQuery = new RegExp(`${searchTerm}`, 'gi');
 
-  let filter = {};
+  let filterTitle = {};
+  let filterContent= {};
 
   if (searchTerm) {
-    filter.title = { $regex: searchTerm, $options: 'i' };
-
+    filterTitle.title = { $regex: searchQuery };
+    filterContent.content = { $regex: searchQuery };
   }
 
-  Note.find(filter)
+
+  Note.find({$or: [filterTitle, filterContent]})
     .sort({ updatedAt: 'desc' })
     .then(results => {
       res.json(results);
