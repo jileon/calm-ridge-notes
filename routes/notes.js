@@ -42,9 +42,28 @@ router.get('/:id', (req, res, next) => {
 });
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
+  const requiredFields = ["title", "content"];
 
+  for (let i = 0; i < requiredFields.length; i++) {
+    const field = requiredFields[i];
+    if (!(field in req.body)) {
+      const message = `Missing \`${field}\` in request body`;
+      console.error(message);
+      return res.status(400).send(message);
+    }
+  }
+  const newNote = {
+    title: req.body.title,
+    content: req.body.content
+  };
+
+
+  Note.create(newNote)
+    .then(results => {
+      res.location(`${req.originalUrl}${results.id}`).status(201).json(results);
+    });
   console.log('Create a Note');
-  res.location('path/to/new/document').status(201).json({ id: 2, title: 'Temp 2' });
+  
 
 });
 
