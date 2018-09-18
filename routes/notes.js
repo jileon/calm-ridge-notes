@@ -28,6 +28,18 @@ router.get('/', (req, res, next) => {
     });
 });
 
+
+/* ========== GET NOTE BY ID ========== */
+router.get('/:id', (req, res, next) => {
+  const noteId = req.params.id;
+  Note.findById(noteId)
+    .then(results => {
+      res.json(results);
+    })
+    .catch(err => {
+      next(err);
+    });
+});
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
 
