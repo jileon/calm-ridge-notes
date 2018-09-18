@@ -102,9 +102,15 @@ router.put('/:id', (req, res, next) => {
 
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
 router.delete('/:id', (req, res, next) => {
-
   console.log('Delete a Note');
-  res.status(204).end();
+  const deleteId = req.params.id;
+
+  Note.findByIdAndDelete(deleteId)
+    .then(()=>{
+      res.status(204).end();
+    })
+    .catch(err => res.status(500).json({ message: "Internal server error" }));
+  
 });
 
 module.exports = router;
