@@ -1,27 +1,31 @@
 'use strict';
 
 const express = require('express');
-
 const router = express.Router();
+const mongoose = require('mongoose');
+const { MONGODB_URI } = require('../config');
+
+const Note = require('../models/note');
 
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
+  const { searchTerm } = req.query;
 
-  console.log('Get All Notes');
-  res.json([
-    { id: 1, title: 'Temp 1' },
-    { id: 2, title: 'Temp 2' },
-    { id: 3, title: 'Temp 3' }
-  ]);
+  let filter = {};
 
-});
+  if (searchTerm) {
+    filter.title = { $regex: searchTerm, $options: 'i' };
 
-/* ========== GET/READ A SINGLE ITEM ========== */
-router.get('/:id', (req, res, next) => {
+  }
 
-  console.log('Get a Note');
-  res.json({ id: 1, title: 'Temp 1' });
-
+  Note.find(filter)
+    .sort({ updatedAt: 'desc' })
+    .then(results => {
+      res.json(results);
+    })
+    .catch(err => {
+      next(err);
+    });
 });
 
 /* ========== POST/CREATE AN ITEM ========== */
