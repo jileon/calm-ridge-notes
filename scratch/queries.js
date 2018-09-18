@@ -21,11 +21,19 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
 //     const id = "000000000000000000000005";
 //     return Note.findById(id);
 // })
+// .then(()=>{
+//     let newNote = {title: "New Note about dogs", content: "dogs are better than cats"}
+
+
+//     return Note.create(newNote);
+// })
 .then(()=>{
-    let newNote = {title: "New Note about dogs", content: "dogs are better than cats"}
-
-
-    return Note.create(newNote);
+    const updateId = "000000000000000000000005";
+    const updatedNote = {
+        title: "French Bull Dogs are too cute",
+        content: "They have lots of nasal problems"
+    };
+    return Note.findByIdAndUpdate(updateId, {$set: updatedNote});
 })
   .then(results => {
     console.log(results);
