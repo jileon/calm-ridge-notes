@@ -17,9 +17,15 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
 
 //     return Note.find(filter).sort({ updatedAt: 'desc' });
 //   })
+// .then(()=>{
+//     const id = "000000000000000000000005";
+//     return Note.findById(id);
+// })
 .then(()=>{
-    const id = "000000000000000000000005";
-    return Note.findById(id);
+    let newNote = {title: "New Note about dogs", content: "dogs are better than cats"}
+
+
+    return Note.create(newNote);
 })
   .then(results => {
     console.log(results);
