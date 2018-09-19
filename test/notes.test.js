@@ -71,7 +71,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
   //==================GET api/Notes/id ==============================
   describe('GET /api/notes/:id', function () {
     it('should return correct note', function () {
-        console.log("RETURN NOTE BY CORRECT ID");
+      console.log('RETURN NOTE BY CORRECT ID');
       let data;
       // 1) First, call the database
       return Note.findOne()
@@ -97,8 +97,27 @@ describe('Connect, createdb, drodb, disconnect', function(){
     });
   });
 
+  //==================POST api/notes ==============================
+  describe('POST /api/notes', function(){
+    it('should create a note in the DB and return it to the user', function(){
+      console.log('CREATE NOTE AND RETURN SAME NOTE');
 
+      const newNote = {title: 'Testing New Note in Mocha', content: 'this is new content'};
 
+      return chai.request(app)
+        .post('/api/notes')
+        .send(newNote)
+        .then((res)=>{
+          expect(res).to.have.status(201);
+          expect(res).to.be.json;
+          expect(res).to.be.a('object');
+          //console.log(res);
+          expect(res.body.title).to.equal(newNote.title);
+        
+        });
+
+    });
+  });
 
 
 
