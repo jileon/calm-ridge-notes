@@ -112,7 +112,6 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(res).to.have.status(201);
           expect(res).to.be.json;
           expect(res).to.be.a('object');
-          //console.log(res);
           expect(res.body.title).to.equal(newNote.title);
           expect(res.body.content).to.equal(newNote.content);
           expect(res.body.id).to.not.equal(null);
@@ -139,9 +138,35 @@ describe('Connect, createdb, drodb, disconnect', function(){
 
 
   //==================PUT api/notes/id ==============================
+  describe(`update note's fields by id number`, function(){
+    it('update correct note located its id, and return updated content', function(){
+      const updateNote = {
+        title: 'updated title',
+        content: 'updated content'
+      };
 
+      let dbNote;
+      return Note
+        .findOne()
+        .then(function(dbRes) {
+          dbNote= dbRes;
+          updateNote.id = dbRes.id;
+          return chai.request(app)
+            .put(`/api/notes/${dbRes.id}`)
+            .send(updateNote);
+        })
+        .then((res)=>{
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res).to.be.a('object');
+          expect(res.body.title).to.equal(updateNote.title);
+          expect(res.body.id).to.equal(updateNote.id);
+          expect(res.body.content).to.equal(updateNote.content);
+          expect(new Date(res.body.createdAt)).to.eql(new Date(dbNote.createdAt));
+        });
+    });
 
-
+  });
 
 
 
