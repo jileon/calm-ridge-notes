@@ -163,7 +163,17 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(res.body.id).to.equal(updateNote.id);
           expect(res.body.content).to.equal(updateNote.content);
           expect(new Date(res.body.createdAt)).to.eql(new Date(dbNote.createdAt));
-        });
+          return chai.request(app)
+            .get(`/api/notes/${res.body.id}`);
+        })
+        .then((chaiRes)=>{
+          expect(chaiRes).to.have.status(200);
+          expect(chaiRes).to.be.json;
+          expect(chaiRes).to.be.a('object');
+          expect(chaiRes.body.title).to.equal(updateNote.title);
+          expect(chaiRes.body.id).to.equal(updateNote.id);
+          expect(chaiRes.body.content).to.equal(updateNote.content);
+        })
     });
 
   });
