@@ -50,7 +50,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
      
     it('Should return all notes', function(){
       let allNotes;
-      console.log('return all Notes');
+      console.log('RETURN ALL NOTES');
       return Note.find()
         .then((response)=>{
           allNotes = response;
@@ -68,33 +68,34 @@ describe('Connect, createdb, drodb, disconnect', function(){
     });
   });
 
+  //==================GET api/Notes/id ==============================
+  describe('GET /api/notes/:id', function () {
+    it('should return correct note', function () {
+        console.log("RETURN NOTE BY CORRECT ID");
+      let data;
+      // 1) First, call the database
+      return Note.findOne()
+        .then(_data => {
+          data = _data;
+          // 2) then call the API with the ID
+          return chai.request(app).get(`/api/notes/${data.id}`);
+        })
+        .then((res) => {
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
 
-// describe('GET /api/notes/:id', function () {
-//     it('should return correct note', function () {
-//       let data;
-//       // 1) First, call the database
-//       return Note.findOne()
-//         .then(_data => {
-//           data = _data;
-//           // 2) then call the API with the ID
-//           return chai.request(app).get(`/api/notes/${data.id}`);
-//         })
-//         .then((res) => {
-//           expect(res).to.have.status(200);
-//           expect(res).to.be.json;
+          expect(res.body).to.be.an('object');
+          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
 
-//           expect(res.body).to.be.an('object');
-//           expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
-
-//           // 3) then compare database results to API response
-//           expect(res.body.id).to.equal(data.id);
-//           expect(res.body.title).to.equal(data.title);
-//           expect(res.body.content).to.equal(data.content);
-//           expect(new Date(res.body.createdAt)).to.eql(data.createdAt);
-//           expect(new Date(res.body.updatedAt)).to.eql(data.updatedAt);
-//         });
-//     });
-//   });
+          // 3) then compare database results to API response
+          expect(res.body.id).to.equal(data.id);
+          expect(res.body.title).to.equal(data.title);
+          expect(res.body.content).to.equal(data.content);
+          expect(new Date(res.body.createdAt)).to.eql(data.createdAt);
+          expect(new Date(res.body.updatedAt)).to.eql(data.updatedAt);
+        });
+    });
+  });
 
 
 
