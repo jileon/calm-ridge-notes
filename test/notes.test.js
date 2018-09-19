@@ -103,24 +103,42 @@ describe('Connect, createdb, drodb, disconnect', function(){
       console.log('CREATE NOTE AND RETURN SAME NOTE');
 
       const newNote = {title: 'Testing New Note in Mocha', content: 'this is new content'};
-
+      let noteRes;
       return chai.request(app)
         .post('/api/notes')
         .send(newNote)
         .then((res)=>{
+          noteRes = res;
           expect(res).to.have.status(201);
           expect(res).to.be.json;
           expect(res).to.be.a('object');
           //console.log(res);
           expect(res.body.title).to.equal(newNote.title);
-        
+          expect(res.body.content).to.equal(newNote.content);
+          expect(res.body.id).to.not.equal(null);
+          //console.log(res);
+          expect(res).to.have.header('location');
+          expect(res.headers.location).to.equal(`/api/notes/${res.body.id}`);
+          expect(new Date(res.body.createdAt)).to.not.equal(null);
+          expect(new Date(res.body.updatedAt)).to.not.equal(null);
+          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
+          return Note.findById(res.body.id);
+        })
+        .then((results)=>{
+          // console.log(results.id);
+          // console.log(noteRes.body.id);
+          expect(results.id).to.equal(noteRes.body.id);
+          expect(results.title).to.equal(noteRes.body.title);
+          expect(results.content).to.equal(noteRes.body.content);
+          expect(new Date(results.createdAt)).to.eql(new Date(noteRes.body.createdAt));
+          expect(new Date(results.updatedAt)).to.eql(new Date(noteRes.body.updatedAt));
         });
 
     });
   });
 
 
-
+  //==================PUT api/notes/id ==============================
 
 
 
