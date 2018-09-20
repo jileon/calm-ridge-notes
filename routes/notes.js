@@ -63,7 +63,8 @@ router.post('/', (req, res, next) => {
 
   Note.create(newNote)
     .then(results => {
-      res.location(`${req.originalUrl}${results.id}`).status(201).json(results);
+      console.log(req.originalUrl);
+      res.location(`${req.originalUrl}/${results.id}`).status(201).json(results);
     })
     .catch(err => {
       next(err);
