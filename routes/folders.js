@@ -47,9 +47,41 @@ router.get('/:id', (req,res,next)=>{
   
 });
 
+/* ========== POST NEW FOLDER ========== */
 
+router.post('/', (req, res, next) => {
+  const requiredField = "name";
 
+  const newFolder = {
+    name: req.body.name
+  };
+  
+  if (!(requiredField in req.body)) {
+    const message = `Missing \`${requiredField}\` in request body`;
+    console.error(message);
+    return res.status(400).send(message);
+  }
 
+  Folder.findOne(newFolder)
+    .then((result)=>{
+      if(result === null){
+        Folder.create(newFolder)
+          .then(newFolder => {
+            console.log(req.originalUrl);
+            res.location(`${req.originalUrl}/${newFolder.id}`).status(201).json(newFolder);
+          });
+      } 
+      if (result !== null){
+        const message = `Folder Name Already exists`;
+        console.error(message);
+        return res.status(400).send(message);
+      }
+    })
+    .catch(err => {
+      next(err);
+    });
+  
+});
 
 
 
