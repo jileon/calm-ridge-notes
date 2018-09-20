@@ -4,8 +4,8 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const { MONGODB_URI } = require('../config');
-
 const Folder = require('../models/folder');
+const Note = require('../models/note');
 
 /* ========== GET/READ ALL FOLDERS ========== */
 
@@ -50,11 +50,11 @@ router.get('/:id', (req,res,next)=>{
 /* ========== POST NEW FOLDER ========== */
 
 router.post('/', (req, res, next) => {
-  const requiredField = "name";
+  const requiredField = 'name';
   const newFolder = {name: req.body.name };
   
   if (!(requiredField in req.body)) {
-    const message = `Missing name in request body`;
+    const message = 'Missing name in request body';
     console.error(message);
     return res.status(400).send(message);
   }
@@ -78,7 +78,7 @@ router.post('/', (req, res, next) => {
 
 /* ========== PUT/UPDATE EXISTING FOLDER ========== */
 router.put(('/:id'), (req,res,next)=>{
-  const requiredField = "name";
+  const requiredField = 'name';
   const updateId = req.params.id;
   const updateFolder = {name: req.body.name};
 
@@ -113,11 +113,14 @@ router.delete('/:id', (req, res, next) => {
   console.log('Delete a Note');
   const deleteId = req.params.id;
   
-  Folder.findByIdAndDelete(deleteId)
+  Note.deleteMany({folderId: deleteId})
+    .then(()=>{
+      Folder.findByIdAndDelete(deleteId);
+    })
     .then(()=>{
       res.status(204).end();
     })
-    .catch(err => res.status(500).json({ message: "Internal server error" }));
+    .catch(err => res.status(500).json({ message: 'Internal server error' }));
     
 });
 //=============================================
