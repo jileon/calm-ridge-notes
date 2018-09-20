@@ -76,7 +76,7 @@ router.post('/', (req, res, next) => {
 });
 
 
-/* ========== PUT/UPDATE NEW FOLDER ========== */
+/* ========== PUT/UPDATE EXISTING FOLDER ========== */
 router.put(('/:id'), (req,res,next)=>{
   const requiredField = "name";
   const updateId = req.params.id;
@@ -107,7 +107,18 @@ router.put(('/:id'), (req,res,next)=>{
     });
      
 });
+/* ========== DELETE FOLDER ========== */
 
-
+router.delete('/:id', (req, res, next) => {
+  console.log('Delete a Note');
+  const deleteId = req.params.id;
+  
+  Folder.findByIdAndDelete(deleteId)
+    .then(()=>{
+      res.status(204).end();
+    })
+    .catch(err => res.status(500).json({ message: "Internal server error" }));
+    
+});
 //=============================================
 module.exports = router;
