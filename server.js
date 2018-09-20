@@ -26,6 +26,7 @@ app.use(express.json());
 app.use('/api/notes', notesRouter);
 app.use('/api/folders', foldersRouter);
 
+
 // Custom 404 Not Found route handler
 app.use((req, res, next) => {
   const err = new Error('Not Found');
