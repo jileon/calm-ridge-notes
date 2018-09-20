@@ -202,6 +202,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
         })
         .then(function(dbNote) {
           expect(dbNote).to.be.null;
+          
         });
     });
   });
