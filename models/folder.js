@@ -14,4 +14,6 @@ folderSchema.set('toObject', {
     delete ret.__v;
   }
 });
-module.exports = mongoose.model('Folder', folderSchema);
+
+const folderModel = mongoose.model('Folder', folderSchema);
+module.exports = folderModel;
