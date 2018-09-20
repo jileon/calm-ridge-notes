@@ -9,13 +9,13 @@ const Folder = require('../models/folder');
 
 /* ========== GET/READ ALL ITEMS ========== */
 
-// router.get('/', (req,res,next)=>{
-//   Folder.find().sort({name: 'desc'})
-//     .then((results)=>{
-//       res.json(results);
-//     })
-//     .catch(err => next(err));
+router.get('/', (req,res,next)=>{
+  Folder.find().sort({name: 'asc'})
+    .then((results)=>{
+      res.json(results);
+    })
+    .catch(err => next(err));
 
-// });
+});
 
 module.exports = router;
