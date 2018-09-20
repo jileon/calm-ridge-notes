@@ -51,40 +51,62 @@ router.get('/:id', (req,res,next)=>{
 
 router.post('/', (req, res, next) => {
   const requiredField = "name";
-
-  const newFolder = {
-    name: req.body.name
-  };
+  const newFolder = {name: req.body.name };
   
   if (!(requiredField in req.body)) {
-    const message = `Missing \`${requiredField}\` in request body`;
+    const message = `Missing name in request body`;
     console.error(message);
     return res.status(400).send(message);
   }
 
-  Folder.findOne(newFolder)
-    .then((result)=>{
-      if(result === null){
-        Folder.create(newFolder)
-          .then(newFolder => {
-            console.log(req.originalUrl);
-            res.location(`${req.originalUrl}/${newFolder.id}`).status(201).json(newFolder);
-          });
-      } 
-      if (result !== null){
-        const message = `Folder Name Already exists`;
-        console.error(message);
-        return res.status(400).send(message);
-      }
+  
+  Folder.create(newFolder)
+    .then(newFolder => {
+      console.log(req.originalUrl);
+      res.location(`${req.originalUrl}/${newFolder.id}`).status(201).json(newFolder);
     })
     .catch(err => {
+      if (err.code === 11000) {
+        err = new Error('Folder name already exists');
+        err.status = 400;
+      }
       next(err);
     });
   
 });
 
 
+/* ========== PUT/UPDATE NEW FOLDER ========== */
+router.put(('/:id'), (req,res,next)=>{
+  const requiredField = "name";
+  const updateId = req.params.id;
+  const updateFolder = {name: req.body.name};
 
+  if (!(requiredField in req.body)) {
+    const message = `Missing \`${requiredField}\` in request body`;
+    console.error(message);
+    return res.status(400).send(message);
+  }
+  if (updateId.length !== 24){
+    const message = `${updateId} is not a valid id.`;
+    console.error(message);
+    return res.status(400).send(message);
+  }
+
+
+  Folder.findByIdAndUpdate(updateId, {$set:updateFolder}, {new: true})
+    .then((results)=>{
+      res.json(results);
+    })
+    .catch(err => {
+      if (err.code === 11000) {
+        err = new Error('Folder name already exists');
+        err.status = 400;
+      }
+      next(err);
+    });
+     
+});
 
 
 //=============================================
