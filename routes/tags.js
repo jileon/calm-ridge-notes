@@ -55,7 +55,7 @@ router.post('/', (req,res,next)=>{
     })
     .catch(err=> {
       if(err.code ===11000){
-        const message = "That tag name already exists";
+        const message = 'That tag name already exists';
         err.status = 400;
         return res.status(400).send(message);
       }
@@ -63,8 +63,51 @@ router.post('/', (req,res,next)=>{
     });
 
 });
+/* ========== PUT/UPDATE TAGS========== */
+
+router.put('/:id', (req,res,next)=>{
+  const updateId = req.params.id;
+  const updateName = req.body.name;
+  const updateTag = {};
+
+  if(req.body.name){
+    updateTag.name = updateName;
+  
+  }
+
+  if(!req.body.name){
+    const err = new Error('Name is missing in request body');
+    err.status = 400;
+    return next(err);
+  }
+
+  
+
+  if(updateId && !mongoose.Types.ObjectId.isValid(updateId)){
+    const err = new Error('The `tagId` is not valid');
+    err.status = 400;
+    return next(err);
+  }
+
+  //   Tag.findByIdAndUpdate()
+  //     .then(results)
 
 
+
+  Tag.findByIdAndUpdate(updateId, {$set:updateTag}, {new: true})
+    .then(results=>{
+      res.json(results);
+    })
+    .catch(err=>{
+      if(err.code ===11000){
+        const message = 'That tag name already exists';
+        err.status = 400;
+        return res.status(400).send(message);
+      }
+    });
+
+
+});
 
 
 
