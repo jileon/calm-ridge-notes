@@ -4,7 +4,6 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const { MONGODB_URI } = require('../config');
-
 const Note = require('../models/note');
 
 /* ========== GET/READ ALL ITEMS ========== */
@@ -42,6 +41,7 @@ const Note = require('../models/note');
 router.get('/', (req, res, next) => {
   const {folderId} = req.query;
   const { searchTerm} = req.query;
+  const { tagId} = req.query;
 
   let filter = {};
 
@@ -57,12 +57,16 @@ router.get('/', (req, res, next) => {
   if (folderId) {
     filter.folderId = folderId;
   }
+  if (tagId) {
+    filter.tags = tagId;
+  }
 
   Note.find(filter)
   
     .sort({ updatedAt: 'desc' })
+    .populate('tags', 'name')
     .then(results => {
-      console.log("===========" + JSON.stringify(filter));
+      console.log('===========' + JSON.stringify(filter));
       res.json(results);
     })
     .catch(err => {
@@ -73,7 +77,15 @@ router.get('/', (req, res, next) => {
 /* ========== GET NOTE BY ID ========== */
 router.get('/:id', (req, res, next) => {
   const noteId = req.params.id;
+
+  if(noteId && !mongoose.Types.ObjectId.isValid(noteId)){
+    const err = new Error('The `Note Id` is not valid');
+    err.status = 400;
+    return next(err);
+  }
+
   Note.findById(noteId)
+    .populate('tags', 'name')
     .then(results => {
       res.json(results);
     })
@@ -117,7 +129,7 @@ router.get('/:id', (req, res, next) => {
 
 
 router.post('/', (req, res, next) => {
-  let { title, content, folderId } = req.body;
+  let { title, content, folderId, tags } = req.body;
 
   /***** Never trust users - validate input *****/
   if (!title) {
@@ -132,11 +144,24 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
+  if(tags){
+    tags.forEach(tag=>{
+      if (!mongoose.Types.ObjectId.isValid(tag)) {
+        const err = new Error('The `tag Id is not valid');
+        err.status = 400;
+        return next(err);
+      }
+    });
+  }
+
   folderId= folderId=== '' ? null : folderId;
+  tags = tags ===[] ? null : tags;
+
   const newNote = { 
     title, 
     content,
-    folderId
+    folderId,
+    tags
   };
 
   Note.create(newNote)
@@ -154,11 +179,9 @@ router.post('/', (req, res, next) => {
 router.put('/:id', (req, res, next) => {
   const updateId = req.params.id;
   const updateNote = {};
-  const updateableFields = ["title","content", "folderId"];
+  const updateableFields = ['title','content', 'folderId', 'tags'];
   if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
-    const message =
-      `Request path id (${req.params.id}) and request body id ` +
-      `(${req.body.id}) must match`;
+    const message = `Request path id (${req.params.id}) and request body id ${req.body.id} must match`;
     console.error(message);
     return res.status(400).json({ message: message });
   }
@@ -174,6 +197,20 @@ router.put('/:id', (req, res, next) => {
       updateNote[field] = req.body[field];
     }
   });
+
+
+  if (updateNote.tags){
+    updateNote['tags'].forEach(tag=>{
+
+      if (!mongoose.Types.ObjectId.isValid(tag)) {
+        const err = new Error('The `Tag Id` is not valid');
+        err.status = 400;
+        return next(err);
+      }
+      
+    });
+  }
+      
 
 
   Note.findByIdAndUpdate(updateId ,{$set: updateNote}, {new: true})
@@ -196,7 +233,7 @@ router.delete('/:id', (req, res, next) => {
     .then(()=>{
       res.status(204).end();
     })
-    .catch(err => res.status(500).json({ message: "Internal server error" }));
+    .catch(err => res.status(500).json({ message: 'Internal server error' }));
   
 });
 
