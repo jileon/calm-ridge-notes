@@ -63,7 +63,7 @@ router.post('/', (req,res,next)=>{
     });
 
 });
-/* ========== PUT/UPDATE TAGS========== */
+/* ========== PUT/UPDATE TAGS by ID========== */
 
 router.put('/:id', (req,res,next)=>{
   const updateId = req.params.id;
@@ -81,19 +81,13 @@ router.put('/:id', (req,res,next)=>{
     return next(err);
   }
 
-  
-
   if(updateId && !mongoose.Types.ObjectId.isValid(updateId)){
     const err = new Error('The `tagId` is not valid');
     err.status = 400;
     return next(err);
   }
 
-  //   Tag.findByIdAndUpdate()
-  //     .then(results)
-
-
-
+  
   Tag.findByIdAndUpdate(updateId, {$set:updateTag}, {new: true})
     .then(results=>{
       res.json(results);
@@ -105,10 +99,32 @@ router.put('/:id', (req,res,next)=>{
         return res.status(400).send(message);
       }
     });
+});
 
+/* ========== Delete TAGS by ID========== */
+router.delete('/:id', (req,res,next)=>{
+  const deleteId = req.params.id;
 
+  if(deleteId && !mongoose.Types.ObjectId.isValid(deleteId)){
+    const message = `${deleteId} is not valid`;
+    const err =  new Error (message);
+    err.status= 400;
+    return next(err);
+  }
+
+  
+
+  Tag.findByIdAndDelete(deleteId)
+    .then(()=>{
+      
+      return Note.updateMany({tags: deleteId},{ $pull: { tags: { $in: [ deleteId ] } } });
+    })
+    .then(()=>{
+      res.status(204).end();
+    })
+    .catch(err=> next(err));
 });
 
 
-
+/*========== Export Tags Router==========*/
 module.exports=router;
