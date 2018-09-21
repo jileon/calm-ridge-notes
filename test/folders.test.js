@@ -6,8 +6,9 @@ const app = require('../server');
 const { TEST_MONGODB_URI } = require('../config');
 
 const Note = require('../models/note');
+const Folder = require('../models/folder');
 
-const { notes } = require('../db/seed/data');
+const { folders, notes } = require('../db/seed/data');
 
 const expect = chai.expect;
 chai.use(chaiHttp);
@@ -33,7 +34,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
   });
     
   beforeEach(function () {
-    return Note.insertMany(notes);
+    return Folder.insertMany(folders);
   });
     
   afterEach(function () {
@@ -46,53 +47,58 @@ describe('Connect, createdb, drodb, disconnect', function(){
 
   //==================GET api/Notes ==============================
 
-  describe('GET api/notes/', function(){
+  describe('GET api/folders/', function(){
      
-    it('Should return all notes', function(){
-      let allNotes;
-      console.log('RETURN ALL NOTES');
-      return Note.find()
+    it('Should return all folders', function(){
+      let allfolders;
+      console.log('RETURN ALL FOLDERS');
+      
+      return Folder.find()
         .then((response)=>{
-          allNotes = response;
+          allfolders= response;
+          // console.log('===='+response +'====');
+          //console.log('==ALL=='+allfolders);
           return chai.request(app)
-            .get('/api/notes');
+            .get('/api/folders');
         })
         .then((res)=>{
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res.body).to.be.a('array');
           expect(res.body).to.have.lengthOf.at.least(1);
-          expect(res.body[0]).to.be.a('object');
-          expect(res.body.length).to.equal(allNotes.length);
+          console.log(res.body);
+        //   expect(res.body[0]).to.be.a('object');
+        //   expect(res.body.length).to.equal(allfolders.length);
         });
     });
   });
 
   //==================GET api/Notes/id ==============================
-  describe('GET /api/notes/:id', function () {
-    it('should return correct note', function () {
-      console.log('RETURN NOTE BY CORRECT ID');
-      let data;
-      // 1) First, call the database
-      return Note.findOne()
-        .then(_data => {
-          data = _data;
-          // 2) then call the API with the ID
-          return chai.request(app).get(`/api/notes/${data.id}`);
+  describe('GET /api/folders/:id', function () {
+    it.only('should return correct folder', function () {
+      console.log('RETURN FOLDER BY CORRECT ID');
+      let note;
+      //insert Notes and grab folder ID from Notes
+      Note.insertMany(notes)
+        .then(()=>{
+          return Note.findOne();
+        }) 
+        .then(notesResult => {
+          note = notesResult;
+          // 2) then call the API with the folder ID
+          return chai.request(app).get(`/api/folders/${note.folderId}`);
         })
         .then((res) => {
           expect(res).to.have.status(200);
           expect(res).to.be.json;
 
           expect(res.body).to.be.an('object');
-          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId');
+          expect(res.body).to.have.keys('name', 'createdAt', 'updatedAt');
 
           // 3) then compare database results to API response
-          expect(res.body.id).to.equal(data.id);
-          expect(res.body.title).to.equal(data.title);
-          expect(res.body.content).to.equal(data.content);
-          expect(new Date(res.body.createdAt)).to.eql(data.createdAt);
-          expect(new Date(res.body.updatedAt)).to.eql(data.updatedAt);
+          expect(res.body.name).to.equal(note.name);
+          expect(new Date(res.body.createdAt)).to.eql(note.createdAt);
+          expect(new Date(res.body.updatedAt)).to.eql(note.updatedAt);
         });
     });
   });
@@ -138,7 +144,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
 
 
   //==================PUT api/notes/id ==============================
-  describe(`update note's fields by id number`, function(){
+  describe('update note\'s fields by id number', function(){
     it('update correct note located its id, and return updated content', function(){
       const updateNote = {
         title: 'updated title',
@@ -173,7 +179,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(chaiRes.body.title).to.equal(updateNote.title);
           expect(chaiRes.body.id).to.equal(updateNote.id);
           expect(chaiRes.body.content).to.equal(updateNote.content);
-        })
+        });
     });
 
   });
