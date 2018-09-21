@@ -7,23 +7,23 @@ const { TEST_MONGODB_URI } = require('../config');
 
 const Note = require('../models/note');
 
-const { notes } = require('../db/seed/notes');
+const { notes } = require('../db/seed/data');
 
 const expect = chai.expect;
 chai.use(chaiHttp);
 
-// describe('sanity check' ,function(){
+describe('sanity check' ,function(){
 
-//   console.log('testing sanity');
-//   it('true should be true', function(){
-//     expect(true).to.be.true;
-//   });
+  console.log('testing sanity');
+  it('true should be true', function(){
+    expect(true).to.be.true;
+  });
 
-//   it('1+1 should equal 2', function(){
-//     expect(1+1).to.equal(2);
-//   });
+  it('1+1 should equal 2', function(){
+    expect(1+1).to.equal(2);
+  });
 
-// });
+});
 
 
 describe('Connect, createdb, drodb, disconnect', function(){
@@ -85,7 +85,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(res).to.be.json;
 
           expect(res.body).to.be.an('object');
-          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
+          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId');
 
           // 3) then compare database results to API response
           expect(res.body.id).to.equal(data.id);
@@ -180,11 +180,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
 
   //==================DELETE api/notes/id ==============================
   describe('DELETE BY ID', function() {
-    // strategy:
-    //  1. get a restaurant
-    //  2. make a DELETE request for that restaurant's id
-    //  3. assert that response has right status code
-    //  4. prove that restaurant with the id doesn't exist in db anymore
+   
     it('deletes a notes by id', function() {
 
       let note;
