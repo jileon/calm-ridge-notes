@@ -34,7 +34,11 @@ describe('Connect, createdb, drodb, disconnect', function(){
   });
     
   beforeEach(function () {
-    return Folder.insertMany(folders);
+    return Promise.all([
+      Note.insertMany(notes),
+      Folder.insertMany(folders),
+      Folder.createIndexes(),
+    ]);
   });
     
   afterEach(function () {
@@ -80,11 +84,8 @@ describe('Connect, createdb, drodb, disconnect', function(){
       let note;
       let folder;
       //insert Notes and grab folder ID from Notes
-      return Note.insertMany(notes)
-        .then((results)=>{
-          //console.log(results[0]);
-          return Note.findOne({folderId : {$exists:true}})
-        })
+      return Note.findOne({folderId : {$exists:true}})
+        
         .then((notesResult)=>{
           note = notesResult;
           //console.log("======" +notesResult);
