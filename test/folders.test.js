@@ -7,8 +7,9 @@ const { TEST_MONGODB_URI } = require('../config');
 
 const Note = require('../models/note');
 const Folder = require('../models/folder');
+const Tag = require('../models/tags');
 
-const { folders, notes } = require('../db/seed/data');
+const { folders, notes, tags } = require('../db/seed/data');
 
 const expect = chai.expect;
 chai.use(chaiHttp);
@@ -36,8 +37,12 @@ describe('Connect, createdb, drodb, disconnect', function(){
   beforeEach(function () {
     return Promise.all([
       Note.insertMany(notes),
+
       Folder.insertMany(folders),
       Folder.createIndexes(),
+
+      Tag.insertMany(tags),
+      Tag.createIndexes()
     ]);
   });
     
