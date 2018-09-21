@@ -13,18 +13,18 @@ const { folders, notes } = require('../db/seed/data');
 const expect = chai.expect;
 chai.use(chaiHttp);
 
-// describe('sanity check' ,function(){
+describe('sanity check' ,function(){
 
-//   console.log('testing sanity');
-//   it('true should be true', function(){
-//     expect(true).to.be.true;
-//   });
+  console.log('testing sanity');
+  it('true should be true', function(){
+    expect(true).to.be.true;
+  });
 
-//   it('1+1 should equal 2', function(){
-//     expect(1+1).to.equal(2);
-//   });
+  it('1+1 should equal 2', function(){
+    expect(1+1).to.equal(2);
+  });
 
-// });
+});
 
 
 describe('Connect, createdb, drodb, disconnect', function(){
@@ -67,7 +67,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(res.body).to.be.a('array');
           expect(res.body).to.have.lengthOf.at.least(1);
           //console.log(res.body);
-        expect(res.body[0]).to.be.a('object');
+          expect(res.body[0]).to.be.a('object');
         //   expect(res.body.length).to.equal(allfolders.length);
         });
     });
@@ -78,35 +78,40 @@ describe('Connect, createdb, drodb, disconnect', function(){
     it('should return correct folder', function () {
       console.log('RETURN FOLDER BY CORRECT ID');
       let note;
+      let folder;
       //insert Notes and grab folder ID from Notes
-      Note.insertMany(notes)
-        .then(()=>{
-          return Note.findOne();
-        }) 
-        .then(notesResult => {
+      return Note.insertMany(notes)
+        .then((results)=>{
+          //console.log(results[0]);
+          return Note.findOne({folderId : {$exists:true}})
+        })
+        .then((notesResult)=>{
           note = notesResult;
-          // 2) then call the API with the folder ID
-          return chai.request(app).get(`/api/folders/${note.folderId}`);
+          //console.log("======" +notesResult);
+          return chai.request(app).get(`/api/folders/${note.folderId}`)
         })
         .then((res) => {
+          folder=res;
+          //   console.log(res + '==========');
+          //   console.log(folder.body);
           expect(res).to.have.status(200);
           expect(res).to.be.json;
-
+    
           expect(res.body).to.be.an('object');
           expect(res.body).to.have.keys('name', 'createdAt', 'updatedAt');
-
+    
           // 3) then compare database results to API response
-          expect(res.body.name).to.equal(note.name);
-          expect(new Date(res.body.createdAt)).to.eql(note.createdAt);
-          expect(new Date(res.body.updatedAt)).to.eql(note.updatedAt);
-        });
+          expect(res.body.name).to.equal(folder.body.name);
+          //expect(new Date(res.body.createdAt.toString())).to.equal(folder.body.createdAt.toString());
+        //   expect(new Date(res.body.updatedAt)).to.eql(folder.body.updatedAt);
+        }); 
     });
   });
 
   //==================POST api/notes ==============================
   describe('POST /api/folders', function(){
     it('should create a note in the DB and return it to the user', function(){
-      console.log('CREATE FOLDER AND RETURN SAME NOTE');
+      console.log('CREATE FOLDER AND RETURN SAME FOLDER');
 
       const newFolder = {name: 'New Folder Test'};
       let newFolderRes;
@@ -129,7 +134,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           return Folder.findOne({name: res.body.name});
         })
         .then((results)=>{
-          console.log(results);
+          //console.log(results);
           expect(results.name).to.equal(newFolderRes.body.name);
           expect(new Date(results.createdAt)).to.eql(new Date(newFolderRes.body.createdAt));
           expect(new Date(results.updatedAt)).to.eql(new Date(newFolderRes.body.updatedAt));
@@ -176,10 +181,10 @@ describe('Connect, createdb, drodb, disconnect', function(){
 
   });
 
-//==================DELETE api/notes/id ==============================
+  //==================DELETE api/notes/id ==============================
   describe('DELETE BY ID', function() {
  
-    it.only('deletes a folder by id', function() {
+    it('deletes a folder by id', function() {
 
       let folder;
 

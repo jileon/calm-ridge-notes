@@ -12,18 +12,18 @@ const { notes } = require('../db/seed/data');
 const expect = chai.expect;
 chai.use(chaiHttp);
 
-// describe('sanity check' ,function(){
+describe('sanity check' ,function(){
 
-//   console.log('testing sanity');
-//   it('true should be true', function(){
-//     expect(true).to.be.true;
-//   });
+  console.log('testing sanity');
+  it('true should be true', function(){
+    expect(true).to.be.true;
+  });
 
-//   it('1+1 should equal 2', function(){
-//     expect(1+1).to.equal(2);
-//   });
+  it('1+1 should equal 2', function(){
+    expect(1+1).to.equal(2);
+  });
 
-// });
+});
 
 
 describe('Connect, createdb, drodb, disconnect', function(){
