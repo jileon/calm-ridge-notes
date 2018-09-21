@@ -14,7 +14,7 @@ chai.use(chaiHttp);
 
 describe('sanity check' ,function(){
 
-  console.log('testing sanity');
+  console.log('Testing Sanity On Notes');
   it('true should be true', function(){
     expect(true).to.be.true;
   });
@@ -85,7 +85,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(res).to.be.json;
 
           expect(res.body).to.be.an('object');
-          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId');
+          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId', 'tags');
 
           // 3) then compare database results to API response
           expect(res.body.id).to.equal(data.id);
@@ -99,7 +99,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
 
   //==================POST api/notes ==============================
   describe('POST /api/notes', function(){
-    it.only('should create a note in the DB and return it to the user', function(){
+    it('should create a note in the DB and return it to the user', function(){
       console.log('CREATE NOTE AND RETURN SAME NOTE');
 
       const newNote = {title: 'Testing New Note in Mocha', content: 'this is new content', folderId: '111111111111111111111101' };
@@ -120,7 +120,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(res.headers.location).to.equal(`/api/notes/${res.body.id}`);
           expect(new Date(res.body.createdAt)).to.not.equal(null);
           expect(new Date(res.body.updatedAt)).to.not.equal(null);
-          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId');
+          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId', 'tags');
           return Note.findById(res.body.id);
         })
         .then((results)=>{

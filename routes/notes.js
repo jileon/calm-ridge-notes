@@ -198,7 +198,6 @@ router.put('/:id', (req, res, next) => {
     }
   });
 
-
   if (updateNote.tags){
     updateNote['tags'].forEach(tag=>{
 
@@ -211,8 +210,6 @@ router.put('/:id', (req, res, next) => {
     });
   }
       
-
-
   Note.findByIdAndUpdate(updateId ,{$set: updateNote}, {new: true})
     .then((results)=>{
       res.json(results);

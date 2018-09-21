@@ -15,7 +15,7 @@ chai.use(chaiHttp);
 
 describe('sanity check' ,function(){
 
-  console.log('testing sanity');
+  console.log('Testing Sanity On Folders');
   it('true should be true', function(){
     expect(true).to.be.true;
   });
@@ -99,7 +99,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(res).to.be.json;
     
           expect(res.body).to.be.an('object');
-          expect(res.body).to.have.keys('name', 'createdAt', 'updatedAt');
+          expect(res.body).to.have.keys('name', 'createdAt', 'updatedAt', 'id');
     
           // 3) then compare database results to API response
           expect(res.body.name).to.equal(folder.body.name);
@@ -131,7 +131,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           //expect(res.headers.location).to.equal(`/api/folders/${res.body.id}`);
           expect(new Date(res.body.createdAt)).to.not.equal(null);
           expect(new Date(res.body.updatedAt)).to.not.equal(null);
-          expect(res.body).to.have.keys('name', 'createdAt', 'updatedAt');
+          expect(res.body).to.have.keys('name', 'createdAt', 'updatedAt', 'id');
           return Folder.findOne({name: res.body.name});
         })
         .then((results)=>{
