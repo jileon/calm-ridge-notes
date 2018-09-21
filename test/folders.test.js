@@ -176,34 +176,32 @@ describe('Connect, createdb, drodb, disconnect', function(){
 
   });
 
-//   //==================DELETE api/notes/id ==============================
-//   describe('DELETE BY ID', function() {
-//     // strategy:
-//     //  1. get a restaurant
-//     //  2. make a DELETE request for that restaurant's id
-//     //  3. assert that response has right status code
-//     //  4. prove that restaurant with the id doesn't exist in db anymore
-//     it('deletes a notes by id', function() {
+//==================DELETE api/notes/id ==============================
+  describe('DELETE BY ID', function() {
+ 
+    it.only('deletes a folder by id', function() {
 
-//       let note;
+      let folder;
 
-//       return Note
-//         .findOne()
-//         .then(function(dbNote) {
-//           note = dbNote;
-//           return chai.request(app).delete(`/api/notes/${note.id}`);
-//         })
-//         .then(function(res) {
-//           expect(res).to.have.status(204);
-//           return Note
-//             .findById(note.id);
-//         })
-//         .then(function(dbNote) {
-//           expect(dbNote).to.be.null;
+      return Folder
+        .findOne()
+        .then(function(dbFolder) {
+          folder = dbFolder;
+          return chai.request(app).delete(`/api/folders/${folder.id}`);
+        })
+        .then(function(res) {
+          expect(res).to.have.status(204);
+          return Folder
+            .findById(folder.id);
+        })
+        .then(function(dbNote) {
+          expect(dbNote).to.be.null;
           
-//         });
-//     });
-//   });
+        });
+    });
+  });
 
-//   //=============================================================
+  //Need to add more tests to make sure associated notes aren't deleted
+
+//=============================================================
 });

@@ -180,11 +180,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
 
   //==================DELETE api/notes/id ==============================
   describe('DELETE BY ID', function() {
-    // strategy:
-    //  1. get a restaurant
-    //  2. make a DELETE request for that restaurant's id
-    //  3. assert that response has right status code
-    //  4. prove that restaurant with the id doesn't exist in db anymore
+   
     it('deletes a notes by id', function() {
 
       let note;
