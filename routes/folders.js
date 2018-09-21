@@ -113,15 +113,31 @@ router.delete('/:id', (req, res, next) => {
   console.log('Delete a Note');
   const deleteId = req.params.id;
   
-  Note.deleteMany({folderId: deleteId})
+
+  //======On Cascade delete option=====
+  //   Note.deleteMany({folderId: deleteId})
+  //     .then(()=>{
+  //       Folder.findByIdAndDelete(deleteId)
+  //         .then(()=>{
+  //           res.status(204).end();
+  //         });
+  //     })
+  //     .catch(err => res.status(500).json({ message: 'Internal server error' }));
+   
+  //
+
+  //======Delete Folder, but keep the note associated with that folder=====
+  Note.updateMany({folderId: deleteId}, {$unset: {folderId: ""}})
     .then(()=>{
       Folder.findByIdAndDelete(deleteId)
         .then(()=>{
           res.status(204).end();
         });
     })
-    .catch(err => res.status(500).json({ message: 'Internal server error' }));
-    
+    .catch(err => {
+      res.status(500).json({ message: 'Internal server error' });
+      console.log(err);
+    });
 });
 //=============================================
 module.exports = router;
