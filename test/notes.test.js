@@ -99,10 +99,10 @@ describe('Connect, createdb, drodb, disconnect', function(){
 
   //==================POST api/notes ==============================
   describe('POST /api/notes', function(){
-    it('should create a note in the DB and return it to the user', function(){
+    it.only('should create a note in the DB and return it to the user', function(){
       console.log('CREATE NOTE AND RETURN SAME NOTE');
 
-      const newNote = {title: 'Testing New Note in Mocha', content: 'this is new content'};
+      const newNote = {title: 'Testing New Note in Mocha', content: 'this is new content', folderId: '111111111111111111111101' };
       let noteRes;
       return chai.request(app)
         .post('/api/notes')
@@ -120,7 +120,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(res.headers.location).to.equal(`/api/notes/${res.body.id}`);
           expect(new Date(res.body.createdAt)).to.not.equal(null);
           expect(new Date(res.body.updatedAt)).to.not.equal(null);
-          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt');
+          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId');
           return Note.findById(res.body.id);
         })
         .then((results)=>{

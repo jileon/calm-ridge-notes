@@ -82,41 +82,72 @@ router.get('/:id', (req, res, next) => {
     });
 });
 /* ========== POST/CREATE AN ITEM ========== */
+// router.post('/', (req, res, next) => {
+//   const { title, content, folderId } = req.body;
+//   const requiredFields = ["title", "content"];
+
+//   for (let i = 0; i < requiredFields.length; i++) {
+//     const field = requiredFields[i];
+//     if (!(field in req.body)) {
+//       const message = `Missing \`${field}\` in request body`;
+//       console.error(message);
+//       return res.status(400).send(message);
+//     }
+//   }
+//   // if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
+//   //   const err = new Error('The `folderId` is not valid');
+//   //   err.status = 400;
+//   //   return next(err);
+//   // }
+
+//   const newNote = { title, content, folderId };
+
+//   Note.create(newNote)
+//     .then(results => {
+//       console.log(req.originalUrl);
+//       res.location(`${req.originalUrl}/${results.id}`).status(201).json(results);
+//     })
+//     .catch(err => {
+//       next(err);
+//     });
+//   console.log('Create a Note');
+
+// });
+
+
+
 router.post('/', (req, res, next) => {
-  const { title, content, folderId } = req.body;
-  const requiredFields = ["title", "content"];
+  let { title, content, folderId } = req.body;
 
-  for (let i = 0; i < requiredFields.length; i++) {
-    const field = requiredFields[i];
-    if (!(field in req.body)) {
-      const message = `Missing \`${field}\` in request body`;
-      console.error(message);
-      return res.status(400).send(message);
-    }
+  /***** Never trust users - validate input *****/
+  if (!title) {
+    const err = new Error('Missing `title` in request body');
+    err.status = 400;
+    return next(err);
   }
-  // if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
-  //   const err = new Error('The `folderId` is not valid');
-  //   err.status = 400;
-  //   return next(err);
-  // }
 
-  const newNote = {
-    title: title,
-    content: content,
-    folderId: folderId
+  if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
+    const err = new Error('The `folderId` is not valid');
+    err.status = 400;
+    return next(err);
+  }
+
+  folderId= folderId=== '' ? null : folderId;
+  const newNote = { 
+    title, 
+    content,
+    folderId
   };
 
   Note.create(newNote)
-    .then(results => {
-      console.log(req.originalUrl);
-      res.location(`${req.originalUrl}/${results.id}`).status(201).json(results);
+    .then(result => {
+      res.location(`${req.originalUrl}/${result.id}`)
+        .status(201)
+        .json(result);
     })
     .catch(err => {
       next(err);
     });
-  console.log('Create a Note');
-  
-
 });
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
