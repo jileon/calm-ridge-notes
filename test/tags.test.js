@@ -95,7 +95,7 @@ describe('Connect, createDb, read/update/delete from db, drobDb, disconnect',
 
     describe('POST /api/tags/', function(){
 
-      it.only('create and return new tag', function(){
+      it('create and return new tag', function(){
         const newTag = {name: "BrandNewTag"};
         let tagRes;
         chai.request(app).post('/api/tags')
@@ -105,8 +105,10 @@ describe('Connect, createDb, read/update/delete from db, drobDb, disconnect',
             expect(response).to.be.json;
             expect(response).to.have.status(200);
             expect(response).to.have.header('location');
+           
             //console.log(response);
             expect(response.header.location).to.equal(tagRes.header.location);
+            expect(response.body.name).to.equal(newTag.name)
             expect(new Date(response.body.createdAt)).to.not.equal(null);
             expect(new Date(response.body.updatedAt)).to.not.equal(null);
             expect(response.body).to.have.keys('id', 'name', 'createdAt', 'updatedAt');
@@ -121,6 +123,41 @@ describe('Connect, createDb, read/update/delete from db, drobDb, disconnect',
 
     /*==================UDATE/PUT api/tags by ID====================*/
 
+    describe('update a tag\'s fields by id number', function(){
+      it('update correct tag located its id, and return updated tag', function(){
+        const updateTag = {name: 'updated name test'};
+      
+        let dbTag;
+        return Tag
+          .findOne()
+          .then(function(dbRes) {
+            dbTag= dbRes;
+            return chai.request(app)
+              .put(`/api/tags/${dbRes.id}`)
+              .send(updateTag);
+          })
+          .then((res)=>{
+            expect(res).to.have.status(200);
+            expect(res).to.be.json;
+            expect(res).to.be.a('object');
+            expect(res.body.name).to.equal(updateTag.name);
+            expect(new Date(res.body.createdAt)).to.eql(new Date(dbTag.createdAt));
+            return chai.request(app)
+              .get(`/api/tags/${dbTag.id}`);
+          })
+          .then((chaiRes)=>{
+            expect(chaiRes).to.have.status(200);
+            //console.log(chaiRes.body);
+            expect(chaiRes).to.be.json;
+            expect(chaiRes).to.be.a('object');
+            expect(chaiRes.body.name).to.equal(updateTag.name);
+            
+  
+          });
+      });
+  
+    });
+    
 
 
     /*==================DELETE api/tags by ID====================*/
