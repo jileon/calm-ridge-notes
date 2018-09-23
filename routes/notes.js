@@ -3,7 +3,6 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const { MONGODB_URI } = require('../config');
 const Note = require('../models/note');
 
 /* ========== GET/READ ALL ITEMS ========== */
@@ -180,6 +179,13 @@ router.put('/:id', (req, res, next) => {
   const updateId = req.params.id;
   const updateNote = {};
   const updateableFields = ['title','content', 'folderId', 'tags'];
+  
+  updateableFields.forEach(field => {
+    if (field in req.body) {
+      updateNote[field] = req.body[field];
+    }
+  });
+  
   if (!(req.params.id && req.body.id && req.params.id === req.body.id)) {
     const message = `Request path id (${req.params.id}) and request body id ${req.body.id} must match`;
     console.error(message);
@@ -192,11 +198,6 @@ router.put('/:id', (req, res, next) => {
     return next(err);
   }
 
-  updateableFields.forEach(field => {
-    if (field in req.body) {
-      updateNote[field] = req.body[field];
-    }
-  });
 
   if (updateNote.tags){
     updateNote['tags'].forEach(tag=>{
@@ -209,6 +210,13 @@ router.put('/:id', (req, res, next) => {
       
     });
   }
+  if (updateNote.folderId === '') {
+    delete updateNote.folderId;
+    updateNote.$unset = {folderId : 1};
+  }
+  
+
+  
       
   Note.findByIdAndUpdate(updateId ,{$set: updateNote}, {new: true})
     .then((results)=>{
@@ -218,7 +226,11 @@ router.put('/:id', (req, res, next) => {
       next(err);
     });
 
+
+
+
 });
+
   
 
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
