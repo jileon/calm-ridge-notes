@@ -6,15 +6,17 @@ const app = require('../server');
 const { TEST_MONGODB_URI } = require('../config');
 
 const Note = require('../models/note');
+const Folder = require('../models/folder');
+const Tag = require('../models/tags');
 
-const { notes } = require('../db/seed/data');
+const { notes, folders, tags } = require('../db/seed/data');
 
 const expect = chai.expect;
 chai.use(chaiHttp);
 
 describe('sanity check' ,function(){
 
-  console.log('testing sanity');
+  console.log('Testing Sanity On Notes');
   it('true should be true', function(){
     expect(true).to.be.true;
   });
@@ -28,12 +30,20 @@ describe('sanity check' ,function(){
 
 describe('Connect, createdb, drodb, disconnect', function(){
   before(function () {
-    return mongoose.connect(TEST_MONGODB_URI)
+    return mongoose.connect(TEST_MONGODB_URI, { useNewUrlParser: true })
       .then(() => mongoose.connection.db.dropDatabase());
   });
-    
+  
   beforeEach(function () {
-    return Note.insertMany(notes);
+    return Promise.all([
+      Note.insertMany(notes),
+
+      Folder.insertMany(folders),
+      Folder.createIndexes(),
+
+      Tag.insertMany(tags),
+      Tag.createIndexes()
+    ]);
   });
     
   afterEach(function () {
@@ -85,7 +95,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(res).to.be.json;
 
           expect(res.body).to.be.an('object');
-          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId');
+          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId', 'tags');
 
           // 3) then compare database results to API response
           expect(res.body.id).to.equal(data.id);
@@ -99,7 +109,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
 
   //==================POST api/notes ==============================
   describe('POST /api/notes', function(){
-    it.only('should create a note in the DB and return it to the user', function(){
+    it('should create a note in the DB and return it to the user', function(){
       console.log('CREATE NOTE AND RETURN SAME NOTE');
 
       const newNote = {title: 'Testing New Note in Mocha', content: 'this is new content', folderId: '111111111111111111111101' };
@@ -120,7 +130,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(res.headers.location).to.equal(`/api/notes/${res.body.id}`);
           expect(new Date(res.body.createdAt)).to.not.equal(null);
           expect(new Date(res.body.updatedAt)).to.not.equal(null);
-          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId');
+          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId', 'tags');
           return Note.findById(res.body.id);
         })
         .then((results)=>{

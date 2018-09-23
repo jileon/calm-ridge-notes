@@ -7,15 +7,16 @@ const { TEST_MONGODB_URI } = require('../config');
 
 const Note = require('../models/note');
 const Folder = require('../models/folder');
+const Tag = require('../models/tags');
 
-const { folders, notes } = require('../db/seed/data');
+const { folders, notes, tags } = require('../db/seed/data');
 
 const expect = chai.expect;
 chai.use(chaiHttp);
 
 describe('sanity check' ,function(){
 
-  console.log('testing sanity');
+  console.log('Testing Sanity On Folders');
   it('true should be true', function(){
     expect(true).to.be.true;
   });
@@ -29,15 +30,19 @@ describe('sanity check' ,function(){
 
 describe('Connect, createdb, drodb, disconnect', function(){
   before(function () {
-    return mongoose.connect(TEST_MONGODB_URI)
+    return mongoose.connect(TEST_MONGODB_URI, { useNewUrlParser: true })
       .then(() => mongoose.connection.db.dropDatabase());
   });
     
   beforeEach(function () {
     return Promise.all([
       Note.insertMany(notes),
+
       Folder.insertMany(folders),
       Folder.createIndexes(),
+
+      Tag.insertMany(tags),
+      Tag.createIndexes()
     ]);
   });
     
@@ -99,7 +104,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(res).to.be.json;
     
           expect(res.body).to.be.an('object');
-          expect(res.body).to.have.keys('name', 'createdAt', 'updatedAt');
+          expect(res.body).to.have.keys('name', 'createdAt', 'updatedAt', 'id');
     
           // 3) then compare database results to API response
           expect(res.body.name).to.equal(folder.body.name);
@@ -131,7 +136,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           //expect(res.headers.location).to.equal(`/api/folders/${res.body.id}`);
           expect(new Date(res.body.createdAt)).to.not.equal(null);
           expect(new Date(res.body.updatedAt)).to.not.equal(null);
-          expect(res.body).to.have.keys('name', 'createdAt', 'updatedAt');
+          expect(res.body).to.have.keys('name', 'createdAt', 'updatedAt', 'id');
           return Folder.findOne({name: res.body.name});
         })
         .then((results)=>{
