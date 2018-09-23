@@ -155,7 +155,7 @@ router.post('/', (req, res, next) => {
   }
 
   folderId= folderId=== '' ? null : folderId;
-  tags = tags ===[] ? null : tags;
+  
 
   const newNote = { 
     title, 
