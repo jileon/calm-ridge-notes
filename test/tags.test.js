@@ -108,11 +108,11 @@ describe('Connect, createDb, read/update/delete from db, drobDb, disconnect',
            
             //console.log(response);
             expect(response.header.location).to.equal(tagRes.header.location);
-            expect(response.body.name).to.equal(newTag.name)
+            expect(response.body.name).to.equal(newTag.name);
             expect(new Date(response.body.createdAt)).to.not.equal(null);
             expect(new Date(response.body.updatedAt)).to.not.equal(null);
             expect(response.body).to.have.keys('id', 'name', 'createdAt', 'updatedAt');
-            return Tag.findById(tagRes.body.id)
+            return Tag.findById(tagRes.body.id);
           })
           .then((tagDbRes)=>{
             expect(tagDbRes.id).to.equal(tagRes.body.id);
@@ -161,6 +161,33 @@ describe('Connect, createDb, read/update/delete from db, drobDb, disconnect',
 
 
     /*==================DELETE api/tags by ID====================*/
+    describe('DELETE /api/tags/:id', function() {
+ 
+      it('deletes a folder by id', function() {
+  
+        let tag;
+  
+        return Tag
+          .findOne()
+          .then(dbRes=>{
+            tag = dbRes;
+            return chai.request(app).delete(`/api/tags/${dbRes.id}`);
+          })
+          .then((response)=>{
+            expect(response).to.have.status(204);
+            return chai.request(app).get(`/api/tags/${tag.id}`);
+          })
+          .then(response=>{
+            expect(response.body).to.be.null;
+            return Tag.findById(tag.id);
+          })
+          .then(dbRes=>{
+            expect(dbRes).to.be.null;
+          });
+      });
+    });
 
+
+    //Need to add negative case testing
     //==================================
   });
