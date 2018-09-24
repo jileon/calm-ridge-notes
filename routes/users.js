@@ -8,13 +8,55 @@ const User = require('../models/user');
 
 router.post('/', (req,res,next)=>{
   const {fullname, password, username}= req.body;
+  const requiredFields = ['username', 'password'];
 
 
-  if(!fullname || !username || !password){
-    const err = new Error('Missing information in the request body');
+  requiredFields.forEach(field=>{
+    if (!(field in req.body)){
+      const err = new Error(`Missing ${field}in the request body`);
+      err.status= 400;
+      return next(err);
+    }
+  });
+
+  const trimmedUN = username.trim();
+  if(trimmedUN.length !== username.length){
+    const err = new Error('Please remove uneccessary spaces from your user name');
     err.status= 400;
     return next(err);
   }
+
+  const trimmedPW = password.trim();
+  if(trimmedPW.length !== password.length){
+    const err = new Error('Please remove uneccessary spaces from your password');
+    err.status= 400;
+    return next(err);
+  }
+
+  if(username.length < 1){
+    const err = new Error('Username is too short');
+    err.status= 400;
+    return next(err);
+  }
+
+  if(password.length < 8){
+    const err = new Error('Password is too short. Must be a minimum of eight characters');
+    err.status= 400;
+    return next(err);
+  }
+
+  if(password.length >72){
+    const err = new Error('Password is too long. Must be shorter than 72 characters');
+    err.status= 400;
+    return next(err);
+  }
+
+
+  // const explicityTrimmedFields = ['username', 'password'];
+  // const nonTrimmedField = explicityTrimmedFields.find(
+  //   field => req.body[field].trim() !== req.body[field]
+  // );
+
 
   return User.hashPassword(password)
     .then(digest => {
