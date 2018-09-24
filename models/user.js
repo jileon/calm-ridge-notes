@@ -15,5 +15,5 @@ userSchema.set('toObject', {
   }
 });
 
-const userModel = mongoose.model('Tag', userSchema);
+const userModel = mongoose.model('User', userSchema);
 module.exports = userModel;
