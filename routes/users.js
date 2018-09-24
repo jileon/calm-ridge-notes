@@ -15,7 +15,6 @@ router.post('/', (req,res,next)=>{
     password: password
   };
 
-
   if(!fullname || !username || !password){
     const err = new Error('Missing information in the request body');
     err.status= 400;
