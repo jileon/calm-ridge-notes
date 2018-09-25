@@ -6,6 +6,7 @@ const passport = require('passport');
 
 
 const localStrategy = require('./passport/local');
+const jwtStrategy = require('./passport/jwt');
 const { PORT, MONGODB_URI } = require('./config');
 
 const notesRouter = require('./routes/notes');
@@ -32,6 +33,12 @@ app.use(express.json());
 
 //Utilize Passport strategy
 passport.use(localStrategy);
+passport.use(jwtStrategy);
+
+
+// Protect endpoints using JWT Strategy
+
+
 
 // Mount routers
 app.use('/api/notes', notesRouter);

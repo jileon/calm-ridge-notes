@@ -3,8 +3,11 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const passport = require('passport');
 const { MONGODB_URI } = require('../config');
 const User = require('../models/user');
+
+
 
 router.post('/', (req,res,next)=>{
   const {fullname, password, username}= req.body;
@@ -13,7 +16,7 @@ router.post('/', (req,res,next)=>{
 
   requiredFields.forEach(field=>{
     if (!(field in req.body)){
-      const err = new Error(`Missing ${field}in the request body`);
+      const err = new Error(`Missing ${field} in the request body`);
       err.status= 400;
       return next(err);
     }
