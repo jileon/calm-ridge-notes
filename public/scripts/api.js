@@ -1,24 +1,28 @@
-/* global $ */
+/* global $, store */
+
 'use strict';
 
 const api = (function () {
-  const search = function(path, query) {
+  const search = function (path, query) {
     return $.ajax({
+      headers: { 'Authorization': `Bearer ${store.authToken}` },
       type: 'GET',
       url: path,
       dataType: 'json',
-      data: query
+      data: query,
     });
   };
-  const details = function(path) {
+  const details = function (path) {
     return $.ajax({
+      headers: { 'Authorization': `Bearer ${store.authToken}` },
       type: 'GET',
       dataType: 'json',
-      url: path,
+      url: path
     });
   };
-  const update = function(path, obj) {
+  const update = function (path, obj) {
     return $.ajax({
+      headers: { 'Authorization': `Bearer ${store.authToken}` },
       type: 'PUT',
       url: path,
       contentType: 'application/json',
@@ -26,21 +30,23 @@ const api = (function () {
       data: JSON.stringify(obj)
     });
   };
-  const create = function(path, obj) {
+  const create = function (path, obj) {
     return $.ajax({
+      headers: { 'Authorization': `Bearer ${store.authToken}` },
       type: 'POST',
       url: path,
       contentType: 'application/json',
       dataType: 'json',
-      processData:false,
+      processData: false,
       data: JSON.stringify(obj)
     });
   };
-  const remove = function(path) {
+  const remove = function (path) {
     return $.ajax({
+      headers: { 'Authorization': `Bearer ${store.authToken}` },
       type: 'DELETE',
       dataType: 'json',
-      url: path,
+      url: path
     });
   };
   return {
