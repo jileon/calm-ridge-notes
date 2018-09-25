@@ -210,6 +210,7 @@ router.put('/:id', (req, res, next) => {
       
     });
   }
+
   if (updateNote.folderId === '') {
     delete updateNote.folderId;
     updateNote.$unset = {folderId : 1};
