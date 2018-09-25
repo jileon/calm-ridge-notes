@@ -3,10 +3,14 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
+const passport = require('passport');
 const { MONGODB_URI } = require('../config');
 const Folder = require('../models/folder');
 const Note = require('../models/note');
 const Tag = require('../models/tags');
+
+router.use(passport.authenticate('jwt', { session: false, failWithError: true }));
+
 
 /* ========== GET/READ TAGS========== */
 
