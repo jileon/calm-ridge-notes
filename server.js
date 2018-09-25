@@ -3,8 +3,9 @@ const mongoose = require('mongoose');
 const express = require('express');
 const morgan = require('morgan');
 const passport = require('passport');
-const localStrategy = require('./passport/local');
 
+
+const localStrategy = require('./passport/local');
 const { PORT, MONGODB_URI } = require('./config');
 
 const notesRouter = require('./routes/notes');
