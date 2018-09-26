@@ -249,8 +249,9 @@ router.put('/:id', (req, res, next) => {
 router.delete('/:id', (req, res, next) => {
   console.log('Delete a Note');
   const deleteId = req.params.id;
+  const userId = req.user.id;
 
-  Note.findByIdAndDelete(deleteId)
+  Note.findOneAndRemove({ _id: deleteId, userId})
     .then(()=>{
       res.status(204).end();
     })
