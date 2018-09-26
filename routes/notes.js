@@ -94,7 +94,7 @@ router.get('/:id', (req, res, next) => {
   Note.find({userId: userId, _id: noteId})
     .populate('tags', 'name')
     .then(results => {
-      res.json(results);
+      res.json(results[0]);
     })
     .catch(err => {
       next(err);
@@ -137,6 +137,7 @@ router.get('/:id', (req, res, next) => {
 
 router.post('/', (req, res, next) => {
   let { title, content, folderId, tags } = req.body;
+  const userId = req.user.id;
 
   /***** Never trust users - validate input *****/
   if (!title) {
@@ -168,7 +169,8 @@ router.post('/', (req, res, next) => {
     title, 
     content,
     folderId,
-    tags
+    tags,
+    userId
   };
 
   Note.create(newNote)
