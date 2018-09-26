@@ -53,11 +53,11 @@ router.get('/', (req, res, next) => {
   filter.userId = userId;
 
   if (searchTerm) {
-    // filter.title = { $regex: searchTerm, $options: 'i' };
-    filter.title = { $regex: 'Lady Gaga', $options: 'i' };
+    //filter.title = { $regex: searchTerm, $options: 'i' };
+    //filter.title = { $regex: 'Lady Gaga', $options: 'i' };
 
     // Mini-Challenge: Search both `title` and `content`
-    const re = new RegExp('Lady Gaga', 'i');
+    const re = new RegExp(`${searchTerm}`, 'i');
     filter.$or = [{ 'title': re }, { 'content': re }];
   }
 
@@ -84,14 +84,14 @@ router.get('/', (req, res, next) => {
 /* ========== GET NOTE BY ID ========== */
 router.get('/:id', (req, res, next) => {
   const noteId = req.params.id;
-
+  const userId = req.user.id;
   if(noteId && !mongoose.Types.ObjectId.isValid(noteId)){
     const err = new Error('The `Note Id` is not valid');
     err.status = 400;
     return next(err);
   }
 
-  Note.findById(noteId)
+  Note.find({userId: userId, _id: noteId})
     .populate('tags', 'name')
     .then(results => {
       res.json(results);
