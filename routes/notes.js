@@ -46,8 +46,11 @@ router.get('/', (req, res, next) => {
   const {folderId} = req.query;
   const { searchTerm} = req.query;
   const { tagId} = req.query;
+  const userId = req.user.id;
+  
 
   let filter = {};
+  filter.userId = userId;
 
   if (searchTerm) {
     // filter.title = { $regex: searchTerm, $options: 'i' };
