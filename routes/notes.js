@@ -5,6 +5,8 @@ const router = express.Router();
 const mongoose = require('mongoose');
 const passport = require('passport');
 const Note = require('../models/note');
+const Folder= require('../models/folder');
+const Tag= require('../models/tags');
 
 
 router.use('/', passport.authenticate('jwt', { session: false, failWithError: true }));
@@ -138,6 +140,8 @@ router.get('/:id', (req, res, next) => {
 router.post('/', (req, res, next) => {
   let { title, content, folderId, tags } = req.body;
   const userId = req.user.id;
+  folderId= folderId=== '' ? null : folderId;
+
 
   /***** Never trust users - validate input *****/
   if (!title) {
@@ -152,17 +156,42 @@ router.post('/', (req, res, next) => {
     return next(err);
   }
 
+  if(folderId){
+    Folder.find({_id: folderId, userId})
+      .then((result)=>{
+        //console.log(result);
+        if (result.length < 1){
+          const err = new Error('The `folderId` is not valid');
+          err.status = 400;
+          return next(err);
+        }
+      });
+  }
+
   if(tags){
     tags.forEach(tag=>{
       if (!mongoose.Types.ObjectId.isValid(tag)) {
         const err = new Error('The `tag Id is not valid');
         err.status = 400;
         return next(err);
-      }
+      } 
+    });
+
+    tags.forEach(tag=>{
+      Tag.find({_id: tag, userId})
+        .then(result=>{
+          if (result.length < 1){
+            const err = new Error('The `folderId` is not valid');
+            err.status = 400;
+            return next(err);
+            //OR return Promise.reject(err); ?????
+          }
+        }
+        );
     });
   }
-
-  folderId= folderId=== '' ? null : folderId;
+ 
+    
   
 
   const newNote = { 
@@ -172,7 +201,6 @@ router.post('/', (req, res, next) => {
     tags,
     userId
   };
-
   Note.create(newNote)
     .then(result => {
       res.location(`${req.originalUrl}/${result.id}`)

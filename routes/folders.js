@@ -67,7 +67,7 @@ router.post('/', (req, res, next) => {
     return res.status(400).send(message);
   }
 
-  
+
   Folder.create(newFolder)
     .then(newFolder => {
       console.log(req.originalUrl);
@@ -104,6 +104,7 @@ router.put(('/:id'), (req,res,next)=>{
     console.error(message);
     return res.status(400).send(message);
   }
+
 
 
   Folder.findByIdAndUpdate(updateId, {$set:updateFolder}, {new: true})
