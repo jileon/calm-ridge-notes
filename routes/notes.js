@@ -189,6 +189,7 @@ router.put('/:id', (req, res, next) => {
   const updateId = req.params.id;
   const updateNote = {};
   const updateableFields = ['title','content', 'folderId', 'tags'];
+  const userId = req.user.id;
   
   updateableFields.forEach(field => {
     if (field in req.body) {
@@ -229,7 +230,7 @@ router.put('/:id', (req, res, next) => {
 
   
       
-  Note.findByIdAndUpdate(updateId ,{$set: updateNote}, {new: true})
+  Note.findOneAndUpdate({userId: userId , _id: updateId},{$set: updateNote}, {new: true})
     .then((results)=>{
       res.json(results);
     })
