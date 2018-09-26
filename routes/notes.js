@@ -168,10 +168,15 @@ router.post('/', (req, res, next) => {
       });
   }
 
+  if (!Array.isArray(tags)){
+    const err = new Error('Tags is not an Array');
+    err.status = 400;
+    return next(err);
+  }
   if(tags){
     tags.forEach(tag=>{
       if (!mongoose.Types.ObjectId.isValid(tag)) {
-        const err = new Error('The `tag Id is not valid');
+        const err = new Error(' A `tagId` in the body is not valid');
         err.status = 400;
         return next(err);
       } 
@@ -181,7 +186,7 @@ router.post('/', (req, res, next) => {
       Tag.find({_id: tag, userId})
         .then(result=>{
           if (result.length < 1){
-            const err = new Error('The `folderId` is not valid');
+            const err = new Error(' A `tagId` in the body not valid');
             err.status = 400;
             return next(err);
             //OR return Promise.reject(err); ?????
