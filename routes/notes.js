@@ -244,14 +244,14 @@ router.put('/:id', (req, res, next) => {
 });
 
   
-
+// Category.findOne({_id: req.params.category , 'retailers._id' : req.params.id}
 /* ========== DELETE/REMOVE A SINGLE ITEM ========== */
 router.delete('/:id', (req, res, next) => {
   console.log('Delete a Note');
   const deleteId = req.params.id;
   const userId = req.user.id;
 
-  Note.findOneAndRemove({ _id: deleteId, userId})
+  Note.findOneAndRemove({ _id: deleteId, userId:userId})
     .then(()=>{
       res.status(204).end();
     })
