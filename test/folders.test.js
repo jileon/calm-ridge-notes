@@ -1,15 +1,16 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const mongoose = require('mongoose');
-
+const jwt= require('jsonwebtoken');
 const app = require('../server');
-const { TEST_MONGODB_URI } = require('../config');
+const { TEST_MONGODB_URI, JWT_SECRET } = require('../config');
 
 const Note = require('../models/note');
 const Folder = require('../models/folder');
 const Tag = require('../models/tags');
+const User = require('../models/user');
 
-const { folders, notes, tags } = require('../db/seed/data');
+const { folders, notes, tags, users } = require('../db/seed/data');
 
 const expect = chai.expect;
 chai.use(chaiHttp);
@@ -33,17 +34,24 @@ describe('Connect, createdb, drodb, disconnect', function(){
     return mongoose.connect(TEST_MONGODB_URI, { useNewUrlParser: true })
       .then(() => mongoose.connection.db.dropDatabase());
   });
-    
+
+
+  let token;
+  let user;
+
   beforeEach(function () {
     return Promise.all([
-      Note.insertMany(notes),
-
+      User.insertMany(users),
       Folder.insertMany(folders),
       Folder.createIndexes(),
-
       Tag.insertMany(tags),
-      Tag.createIndexes()
-    ]);
+      Tag.createIndexes(),
+      Note.insertMany(notes)
+    ])
+      .then(([users]) => {
+        user = users[0];
+        token = jwt.sign({ user }, JWT_SECRET, { subject: user.username });
+      });
   });
     
   afterEach(function () {
@@ -62,24 +70,45 @@ describe('Connect, createdb, drodb, disconnect', function(){
       let allfolders;
       console.log('RETURN ALL FOLDERS');
       
-      return Folder.find()
+      return Folder.find({userId: user.id})
         .then((response)=>{
           allfolders= response;
           // console.log('===='+response +'====');
-          //console.log('==ALL=='+allfolders);
+          // console.log('==ALL=='+allfolders);
           return chai.request(app)
-            .get('/api/folders');
+            .get('/api/folders')
+            .set('Authorization', `Bearer ${token}`); 
         })
         .then((res)=>{
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res.body).to.be.a('array');
           expect(res.body).to.have.lengthOf.at.least(1);
-          //console.log(res.body);
+          // console.log(res.body);
           expect(res.body[0]).to.be.a('object');
-        //   expect(res.body.length).to.equal(allfolders.length);
+          expect(res.body.length).to.equal(allfolders.length);
         });
     });
+    it('should return a list with the correct right fields', function () {
+      const dbPromise = Folder.find({ userId: user.id }); 
+      const apiPromise = chai.request(app)
+        .get('/api/folders')
+        .set('Authorization', `Bearer ${token}`); 
+    
+      return Promise.all([dbPromise, apiPromise])
+        .then(([data, res]) => {
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.be.a('array');
+          res.body.forEach(function (item) {
+            expect(item).to.be.a('object');
+            expect(item).to.have.keys('id', 'name', 'userId', 'createdAt', 'updatedAt');  // <<== Update assertion
+          });
+        });
+    });
+
+
+
   });
 
   //==================GET api/Notes/id ==============================
@@ -88,24 +117,24 @@ describe('Connect, createdb, drodb, disconnect', function(){
       console.log('RETURN FOLDER BY CORRECT ID');
       let note;
       let folder;
+
       //insert Notes and grab folder ID from Notes
-      return Note.findOne({folderId : {$exists:true}})
-        
+      return Note.findOne({folderId : {$exists:true}, userId: user.id})
+       
         .then((notesResult)=>{
           note = notesResult;
-          //console.log("======" +notesResult);
+          // console.log("======" +notesResult+"======" );
+          // console.log("======" +user.id+"======" );
           return chai.request(app).get(`/api/folders/${note.folderId}`)
+            .set('Authorization', `Bearer ${token}`); 
         })
         .then((res) => {
           folder=res;
-          //   console.log(res + '==========');
           //   console.log(folder.body);
           expect(res).to.have.status(200);
           expect(res).to.be.json;
-    
           expect(res.body).to.be.an('object');
-          expect(res.body).to.have.keys('name', 'createdAt', 'updatedAt', 'id');
-    
+          expect(res.body).to.have.keys('name', 'createdAt', 'updatedAt', 'id', 'userId');
           // 3) then compare database results to API response
           expect(res.body.name).to.equal(folder.body.name);
           //expect(new Date(res.body.createdAt.toString())).to.equal(folder.body.createdAt.toString());

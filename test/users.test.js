@@ -12,7 +12,7 @@ const expect = chai.expect;
 
 chai.use(chaiHttp);
 
-describe.only('Noteful API - Users', function () {
+describe('Noteful API - Users', function () {
   const username = 'exampleUser';
   const password = 'examplePass';
   const fullname = 'Example User';
@@ -170,8 +170,7 @@ describe.only('Noteful API - Users', function () {
 
         User.create({fullname: 'Kanet Leon', username: 'abc123', password: '12345678'})
           .then((res)=>{ 
-            console.log(res);
-            console.log('HELLLLOOOOOO');
+            console.log("hello");
           });
         return chai.request(app)
           .post('/api/users')
@@ -180,7 +179,7 @@ describe.only('Noteful API - Users', function () {
             expect(res).to.have.status(400);
           });
       });
-      it.only('Should trim fullname', function(){
+      it('Should trim fullname', function(){
         const testUser = {fullname:'    trimName   ' , username, password}
         return chai.request(app)
           .post('/api/users')
