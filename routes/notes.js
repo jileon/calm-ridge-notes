@@ -144,29 +144,48 @@ router.post('/', (req, res, next) => {
 
 
   /***** Never trust users - validate input *****/
-  if (!title) {
-    const err = new Error('Missing `title` in request body');
-    err.status = 400;
-    return next(err);
-  }
+  // if (!title) {
+  //   const err = new Error('Missing `title` in request body');
+  //   err.status = 400;
+  //   return next(err);
+  // }
 
-  if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
-    const err = new Error('The `folderId` is not valid');
-    err.status = 400;
-    return next(err);
-  }
+  // if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
+  //   const err = new Error('The `folderId` is not valid');
+  //   err.status = 400;
+  //   return next(err);
+  // }
 
   if(folderId){
     Folder.find({_id: folderId, userId})
       .then((result)=>{
-        //console.log(result);
+        console.log(result);
         if (result.length < 1){
           const err = new Error('The `folderId` is not valid');
           err.status = 400;
           return next(err);
         }
+      })
+      .catch(err => {
+        next(err);
       });
   }
+
+
+  // if(folderId){
+  //   Folder.find({_id: folderId})
+  //     .then(([result])=>{
+  //       console.log(result.userId.toString() + ' compared to ' + req.user.id)
+  //       if (result.userId.toString() !== req.user.userId){
+  //         const err = new Error('The `folderId` is not valid');
+  //         err.status = 400;
+  //         return next(err);
+  //       }
+  //     })
+  //     .catch(err => {
+  //       next(err);
+  //     });
+  // }
 
   if (!Array.isArray(tags)){
     const err = new Error('Tags is not an Array');
@@ -193,8 +212,10 @@ router.post('/', (req, res, next) => {
            
             //OR return Promise.reject(err); ?????
           }
-        }
-        );
+        })
+        .catch(err => {
+          next(err);
+        });
     });
   }
  

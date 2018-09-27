@@ -365,6 +365,8 @@ const noteful = (function () {
     });
   }
 
+
+  //Sign Up and Login handlers
   function handleSignupSubmit() {
     $('.js-signup-from').on('submit', event => {
       event.preventDefault();

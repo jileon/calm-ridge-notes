@@ -10,9 +10,9 @@ const User = require('../models/user');
 
 
 router.post('/', (req,res,next)=>{
-  const {fullname, password, username}= req.body;
+  const {username, password, fullname}= req.body;
   const requiredFields = ['username', 'password'];
-
+  //let fullname = req.body.fullname;
 
   requiredFields.forEach(field=>{
     if (!(field in req.body)){
@@ -22,9 +22,26 @@ router.post('/', (req,res,next)=>{
     }
   });
 
+
+  if (typeof username !== 'string'){
+    const err = new Error ('Cannot accept number as a username');
+    err.status = 400;
+    return next(err);
+  }
+
+  // if(fullname){
+  //   fullname = fullname.trim();
+  // }
+
+  if (typeof password !== 'string'){
+    const err = new Error ('Cannot accept number as a password');
+    err.status = 400;
+    return next(err);
+  }
+
   const trimmedUN = username.trim();
   if(trimmedUN.length !== username.length){
-    const err = new Error('Please remove uneccessary spaces from your user name');
+    const err = new Error('Please remove uneccessary spaces from your username');
     err.status= 400;
     return next(err);
   }
@@ -54,6 +71,7 @@ router.post('/', (req,res,next)=>{
     return next(err);
   }
 
+ 
 
 
 
@@ -62,7 +80,7 @@ router.post('/', (req,res,next)=>{
       const newUser = {
         username,
         password: digest,
-        fullname
+        fullname: fullname.trim()
       };
       return User.create(newUser);
     })

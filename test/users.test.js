@@ -75,6 +75,7 @@ describe.only('Noteful API - Users', function () {
             expect(res).to.have.status(400);
             expect(res.body.message).to.equal('Missing username in the request body');
           });
+        
       });
 
       /**
@@ -93,15 +94,102 @@ describe.only('Noteful API - Users', function () {
           });
       });
 
-      it('Should reject users with non-string username');
-      it('Should reject users with non-string password');
-      it('Should reject users with non-trimmed username');
-      it('Should reject users with non-trimmed password');
-      it('Should reject users with empty username');
-      it('Should reject users with password less than 8 characters');
-      it('Should reject users with password greater than 72 characters');
-      it('Should reject users with duplicate username');
-      it('Should trim fullname');
+      it('Should reject users with non-string username', function(){
+        const testUser = {username:1234, password: 'examplePass'};
+
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
+          .then((res)=>{
+            expect(res).to.have.status(400);
+          
+          });
+      });
+      it('Should reject users with non-string password', function(){
+        const testUser = {username, password: 123456789};
+
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
+          .then(res=>{
+            expect(res).to.have.status(400);
+          });
+      });
+      it('Should reject users with non-trimmed username', function(){
+        const testUser = {username: 'abcdefg   ', password};
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
+          .then(res=>{
+            expect(res).to.have.status(400);
+            expect(res.body.message).to.equal('Please remove uneccessary spaces from your username');
+          });
+      });
+      it('Should reject users with non-trimmed password', function(){
+        const testUser = {username, password: '   abc123456  '};
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
+          .then(res=>{
+            expect(res).to.have.status(400);
+            expect(res.body.message).to.equal('Please remove uneccessary spaces from your password');
+          });
+      });
+      it('Should reject users with empty username', function(){
+        const testUser = {username: '' , password};
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
+          .then(res=>{
+            expect(res).to.have.status(400);
+            expect(res.body.message).to.equal('Username is too short');
+          });
+      });
+      it('Should reject users with password less than 8 characters', function(){
+        const testUser = {username, password: '1'};
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
+          .then(res=>{
+            expect(res).to.have.status(400);
+            expect(res.body.message).to.equal('Password is too short. Must be a minimum of eight characters');
+          });
+      });
+      it('Should reject users with password greater than 72 characters', function(){
+        const testUser = {username, password: '123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890'};
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
+          .then(res=>{
+            expect(res).to.have.status(400);
+            expect(res.body.message).to.equal('Password is too long. Must be shorter than 72 characters');
+          });
+      });
+      it('Should reject users with duplicate username', function(){
+        //const testUser = {fullname, username, password}; Why doesn't this work?
+
+        User.create({fullname: 'Kanet Leon', username: 'abc123', password: '12345678'})
+          .then((res)=>{ 
+            console.log(res);
+            console.log('HELLLLOOOOOO');
+          });
+        return chai.request(app)
+          .post('/api/users')
+          .send({fullname: 'Kanet Leon', username: 'abc123', password: '12345678'})
+          .then((res)=>{
+            expect(res).to.have.status(400);
+          });
+      });
+      it.only('Should trim fullname', function(){
+        const testUser = {fullname:'    trimName   ' , username, password}
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
+          .then (res=>{
+            expect(res.body.fullname).to.equal(testUser.fullname.trim());
+          });
+
+      });
     });
   });
 });

@@ -1,7 +1,7 @@
 
 // seed data for multiple users
 // User #1 = "Ms Green" is related to odd number _id
-// User #2 = "Mr Yellow" is related to odd number _id
+// User #2 = "Mr Yellow" is related to evens number _id
 
 const notes = [
   {
