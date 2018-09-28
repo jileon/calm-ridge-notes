@@ -66,6 +66,21 @@ describe('Noteful API - Users', function () {
             expect(isValid).to.be.true;
           });
       });
+
+      it.only('Should create a user if full name is not included', function(){
+        const testUser= {username, password};
+        
+        return chai.request(app)
+          .post('/api/users')
+          .send(testUser)
+          .then(res=>{
+            expect(res).to.have.status(201);
+            expect(res.body).to.be.a('object');
+            expect(res.body).to.have.keys('id', 'username');
+          });
+        
+      });
+
       it('Should reject users with missing username', function () {
         const testUser = { password, fullname };
         return chai.request(app).post('/api/users').send(testUser)
@@ -168,19 +183,22 @@ describe('Noteful API - Users', function () {
       it('Should reject users with duplicate username', function(){
         //const testUser = {fullname, username, password}; Why doesn't this work?
 
-        User.create({fullname: 'Kanet Leon', username: 'abc123', password: '12345678'})
+        return User.create({fullname: 'Kanet Leon', username: 'abc123', password: '12345678'})
           .then((res)=>{ 
-            console.log("hello");
-          });
-        return chai.request(app)
-          .post('/api/users')
-          .send({fullname: 'Kanet Leon', username: 'abc123', password: '12345678'})
+            return chai.request(app)
+              .post('/api/users')
+              .send({fullname: 'Manet Leon', username: 'abc123', password: '12345678'})
+              
+          })
           .then((res)=>{
             expect(res).to.have.status(400);
           });
+
+
       });
+
       it('Should trim fullname', function(){
-        const testUser = {fullname:'    trimName   ' , username, password}
+        const testUser = {fullname:'    trimName   ' , username, password};
         return chai.request(app)
           .post('/api/users')
           .send(testUser)
