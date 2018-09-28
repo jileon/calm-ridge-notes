@@ -67,7 +67,7 @@ describe('Noteful API - Users', function () {
           });
       });
 
-      it.only('Should create a user if full name is not included', function(){
+      it('Should create a user if full name is not included', function(){
         const testUser= {username, password};
         
         return chai.request(app)
