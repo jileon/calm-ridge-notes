@@ -1,15 +1,17 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 const mongoose = require('mongoose');
+const jwt = require('jsonwebtoken');
 
 const app = require('../server');
-const { TEST_MONGODB_URI } = require('../config');
+const { TEST_MONGODB_URI, JWT_SECRET } = require('../config');
 
 const Note = require('../models/note');
 const Folder = require('../models/folder');
 const Tag = require('../models/tags');
+const User = require('../models/user');
 
-const { notes, folders, tags } = require('../db/seed/data');
+const { notes, folders, tags, users} = require('../db/seed/data');
 
 const expect = chai.expect;
 chai.use(chaiHttp);
@@ -34,16 +36,22 @@ describe('Connect, createdb, drodb, disconnect', function(){
       .then(() => mongoose.connection.db.dropDatabase());
   });
   
+  let token;
+  let user;
+
   beforeEach(function () {
     return Promise.all([
-      Note.insertMany(notes),
-
+      User.insertMany(users),
       Folder.insertMany(folders),
       Folder.createIndexes(),
-
       Tag.insertMany(tags),
-      Tag.createIndexes()
-    ]);
+      Tag.createIndexes(),
+      Note.insertMany(notes)
+    ])
+      .then(([users]) => {
+        user = users[0];
+        token = jwt.sign({ user }, JWT_SECRET, { subject: user.username });
+      });
   });
     
   afterEach(function () {
@@ -61,19 +69,23 @@ describe('Connect, createdb, drodb, disconnect', function(){
     it('Should return all notes', function(){
       let allNotes;
       console.log('RETURN ALL NOTES');
-      return Note.find()
+      return Note.find({userId: user.id})
         .then((response)=>{
           allNotes = response;
+
           return chai.request(app)
-            .get('/api/notes');
+            .get('/api/notes')
+            .set('Authorization', `Bearer ${token}`);
         })
         .then((res)=>{
           expect(res).to.have.status(200);
+        
           expect(res).to.be.json;
           expect(res.body).to.be.a('array');
           expect(res.body).to.have.lengthOf.at.least(1);
           expect(res.body[0]).to.be.a('object');
           expect(res.body.length).to.equal(allNotes.length);
+        
         });
     });
   });
@@ -84,18 +96,19 @@ describe('Connect, createdb, drodb, disconnect', function(){
       console.log('RETURN NOTE BY CORRECT ID');
       let data;
       // 1) First, call the database
-      return Note.findOne()
+      return Note.findOne({userId: user.id})
         .then(_data => {
           data = _data;
           // 2) then call the API with the ID
-          return chai.request(app).get(`/api/notes/${data.id}`);
+          return chai.request(app).get(`/api/notes/${data.id}`)
+          .set('Authorization', `Bearer ${token}`);
         })
         .then((res) => {
           expect(res).to.have.status(200);
           expect(res).to.be.json;
 
           expect(res.body).to.be.an('object');
-          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId', 'tags');
+          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId', 'tags', 'userId');
 
           // 3) then compare database results to API response
           expect(res.body.id).to.equal(data.id);
@@ -108,7 +121,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
   });
 
   //==================POST api/notes ==============================
-  describe('POST /api/notes', function(){
+  describe.only('POST /api/notes', function(){
     it('should create a note in the DB and return it to the user', function(){
       console.log('CREATE NOTE AND RETURN SAME NOTE');
 
@@ -116,8 +129,10 @@ describe('Connect, createdb, drodb, disconnect', function(){
       let noteRes;
       return chai.request(app)
         .post('/api/notes')
+        .set('Authorization', `Bearer ${token}`)
         .send(newNote)
         .then((res)=>{
+          console.log(res.body);
           noteRes = res;
           expect(res).to.have.status(201);
           expect(res).to.be.json;
@@ -130,7 +145,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(res.headers.location).to.equal(`/api/notes/${res.body.id}`);
           expect(new Date(res.body.createdAt)).to.not.equal(null);
           expect(new Date(res.body.updatedAt)).to.not.equal(null);
-          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId', 'tags');
+          expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId', 'tags', 'userId');
           return Note.findById(res.body.id);
         })
         .then((results)=>{
