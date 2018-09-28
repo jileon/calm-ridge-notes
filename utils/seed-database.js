@@ -4,8 +4,9 @@ const { MONGODB_URI } = require('../config');
 const Note = require('../models/note');
 const Folder = require('../models/folder');
 const Tag = require('../models/tags');
+const User = require('../models/user');
 
-const { notes, folders, tags} = require('../db/seed/data');
+const { notes, folders, tags, users} = require('../db/seed/data');
 
 
 //  mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
@@ -32,7 +33,9 @@ mongoose.connect(MONGODB_URI, { useNewUrlParser:true })
       Folder.insertMany(folders),
       Folder.createIndexes(),
       Tag.insertMany(tags),
-      Tag.createIndexes()
+      Tag.createIndexes(),
+      User.insertMany(users),
+      User.createIndexes(),
 
     ]);
   })

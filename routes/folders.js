@@ -12,7 +12,10 @@ router.use('/', passport.authenticate('jwt', { session: false, failWithError: tr
 /* ========== GET/READ ALL FOLDERS ========== */
 
 router.get('/', (req,res,next)=>{
-  Folder.find().sort({name: 'asc'})
+  const userId = req.user.id;
+
+  //same as {userId: userId}
+  Folder.find({userId}).sort({name: 'asc'})
     .then((results)=>{
       res.json(results);
     })
@@ -24,15 +27,24 @@ router.get('/', (req,res,next)=>{
 /* ========== GET/READ BY FOLDER ID ========== */
 router.get('/:id', (req,res,next)=>{
   const folderId = req.params.id;
+  const userId = req.user.id;
     
-  if (folderId.length !== 24){
-    const message = `${folderId} is not a valid id.`;
-    console.error(message);
-    return res.status(400).send(message);
+  // if (folderId.length !== 24){
+  //   const message = `${folderId} is not a valid id.`;
+  //   console.error(message);
+  //   return res.status(400).send(message);
+  // }
+
+
+  if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
+    const err = new Error(`Folder Id: ${folderId} is not valid`);
+    err.status = 400;
+    return next(err);
   }
 
-  
-  Folder.findById(folderId)
+  //same as Folder.findOne({_id: folderId, userId: userId})** below we are using object destructuring
+  //can also use Fold.find(), but results come back in an array
+  Folder.findOne({_id: folderId, userId})
     .then((results)=>{
       if (results===null){
         const message = `Nothing found with id ${folderId} `;
@@ -53,15 +65,16 @@ router.get('/:id', (req,res,next)=>{
 
 router.post('/', (req, res, next) => {
   const requiredField = 'name';
-  const newFolder = {name: req.body.name };
-  
+  const userId = req.user.id;
+
+  const newFolder = {name: req.body.name, userId };
   if (!(requiredField in req.body)) {
     const message = 'Missing name in request body';
     console.error(message);
     return res.status(400).send(message);
   }
 
-  
+
   Folder.create(newFolder)
     .then(newFolder => {
       console.log(req.originalUrl);
@@ -82,17 +95,22 @@ router.post('/', (req, res, next) => {
 router.put(('/:id'), (req,res,next)=>{
   const requiredField = 'name';
   const updateId = req.params.id;
-  const updateFolder = {name: req.body.name};
+  const userId = req.user.id;
+
+
+  const updateFolder = {name: req.body.name, userId};
+
 
   if (!(requiredField in req.body)) {
     const message = `Missing \`${requiredField}\` in request body`;
     console.error(message);
     return res.status(400).send(message);
   }
-  if (updateId.length !== 24){
-    const message = `${updateId} is not a valid id.`;
-    console.error(message);
-    return res.status(400).send(message);
+
+  if (updateId && !mongoose.Types.ObjectId.isValid(updateId)) {
+    const err = new Error(`Folder Id: ${updateId} is not valid`);
+    err.status = 400;
+    return next(err);
   }
 
 
@@ -114,6 +132,7 @@ router.put(('/:id'), (req,res,next)=>{
 router.delete('/:id', (req, res, next) => {
   console.log('Delete a Note');
   const deleteId = req.params.id;
+  const userId = req.user.id;
   
 
   //======On Cascade delete option=====
@@ -129,9 +148,9 @@ router.delete('/:id', (req, res, next) => {
   //
 
   //======Delete Folder, but keep the note associated with that folder=====
-  Note.updateMany({folderId: deleteId}, {$unset: {folderId: ""}})
+  Note.updateMany({userId, folderId: deleteId}, {$unset: {folderId: ""}})
     .then(()=>{
-      Folder.findByIdAndDelete(deleteId)
+      Folder.findOneAndRemove({_id: deleteId, userId})
         .then(()=>{
           res.status(204).end();
         });
