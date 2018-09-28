@@ -167,7 +167,8 @@ router.post('/', (req, res, next) => {
               err.status = 400;
               return next(err);}
           });
-      })})
+      });
+    })
     .then(()=>{
       return Note.create(newNote)
         .then(result => {
@@ -221,20 +222,14 @@ router.put('/:id', (req, res, next) => {
     return next(err);
   }
 
-  if(updateNote.folderId){
-    Folder.find({_id: updateNote.folderId, userId})
-      .then((result)=>{
-        //console.log(result);
-        if (result.length < 1){
-          const err = new Error('The `folderId` is not valid');
-          err.status = 400;
-          return next(err);
-         
-        }
-      });
+
+  if (updateNote.folderId === '') {
+    delete updateNote.folderId;
+    updateNote.$unset = {folderId : 1};
   }
 
-  if (!Array.isArray(req.body.tags)){
+
+  if ( req.body.tags && !Array.isArray(req.body.tags)){
     const err = new Error('Tags is not an Array');
     err.status = 400;
     return next(err);
@@ -249,36 +244,42 @@ router.put('/:id', (req, res, next) => {
         return next(err);
       }
     });
-
-    updateNote['tags'].forEach(tag=>{
-      Tag.find({_id: tag, userId})
-        .then(result=>{
-          if (result.length < 1){
-            const err = new Error(' A `tagId` in the body is not valid');
-            err.status = 400;
-            return next(err);
-          }
-        }
-        );
-    });
-
   }
 
-  if (updateNote.folderId === '') {
-    delete updateNote.folderId;
-    updateNote.$unset = {folderId : 1};
-  }
-  
-
-  
-      
-  Note.findOneAndUpdate({userId: userId , _id: updateId},{$set: updateNote}, {new: true})
-    .then((results)=>{
-      res.json(results);
+  Folder.find({_id: updateNote.folderId, userId})
+    .then((result)=>{
+      if (result.length < 1){
+        const err = new Error('The `folderId` is not valid');
+        err.status = 400;
+        return next(err);
+      }
+    })
+    .then(()=>{
+      if(updateNote.tags){
+        updateNote['tags'].forEach(tag=>{
+          Tag.find({_id: tag, userId})
+            .then(result=> { 
+              if(result.length<1)
+              {const err = new Error(' A `tagId` in the body not valid');
+                err.status = 400;
+                return next(err);}
+            });
+        });
+      }
+    })
+    .then(()=>{
+      return Note.findOneAndUpdate({userId: userId , _id: updateId},{$set: updateNote}, {new: true})
+        .then(results => {
+          res.json(results);
+        });
     })
     .catch(err => {
       next(err);
     });
+
+
+  
+ 
 
 
 
