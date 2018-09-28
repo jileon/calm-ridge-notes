@@ -207,7 +207,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(new Date(res.body.createdAt)).to.eql(new Date(dbNote.createdAt));
           return chai.request(app)
             .get(`/api/notes/${res.body.id}`)
-            .set('Authorization', `Bearer ${token}`)
+            .set('Authorization', `Bearer ${token}`);
         })
         .then((chaiRes)=>{
           expect(chaiRes).to.have.status(200);
