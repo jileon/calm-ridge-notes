@@ -101,7 +101,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           data = _data;
           // 2) then call the API with the ID
           return chai.request(app).get(`/api/notes/${data.id}`)
-          .set('Authorization', `Bearer ${token}`);
+            .set('Authorization', `Bearer ${token}`);
         })
         .then((res) => {
           expect(res).to.have.status(200);
@@ -121,18 +121,29 @@ describe('Connect, createdb, drodb, disconnect', function(){
   });
 
   //==================POST api/notes ==============================
-  describe.only('POST /api/notes', function(){
+  describe('POST /api/notes', function(){
     it('should create a note in the DB and return it to the user', function(){
       console.log('CREATE NOTE AND RETURN SAME NOTE');
 
-      const newNote = {title: 'Testing New Note in Mocha', content: 'this is new content', folderId: '111111111111111111111101' };
+      let newNote= {title: 'hello', content: 'sup'};
       let noteRes;
-      return chai.request(app)
-        .post('/api/notes')
-        .set('Authorization', `Bearer ${token}`)
-        .send(newNote)
+
+      return Promise.all([
+        Tag.findOne({userId: user.id}),
+        Folder.findOne({userId: user.id}), 
+      ])
+        .then((results)=>{
+          newNote.tags = [results[0].id];
+          newNote.folderId = results[1].id;
+
+          // console.log(newNote);
+          return chai.request(app)
+            .post('/api/notes')
+            .set('Authorization', `Bearer ${token}`)
+            .send(newNote);
+        })
         .then((res)=>{
-          console.log(res.body);
+        //  console.log(res.body);
           noteRes = res;
           expect(res).to.have.status(201);
           expect(res).to.be.json;
@@ -140,47 +151,53 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(res.body.title).to.equal(newNote.title);
           expect(res.body.content).to.equal(newNote.content);
           expect(res.body.id).to.not.equal(null);
-          //console.log(res);
           expect(res).to.have.header('location');
           expect(res.headers.location).to.equal(`/api/notes/${res.body.id}`);
           expect(new Date(res.body.createdAt)).to.not.equal(null);
           expect(new Date(res.body.updatedAt)).to.not.equal(null);
           expect(res.body).to.have.keys('id', 'title', 'content', 'createdAt', 'updatedAt', 'folderId', 'tags', 'userId');
-          return Note.findById(res.body.id);
+          return Promise.resolve( Note.findOne({_id: res.body.id, userId: user.id}));
         })
         .then((results)=>{
-          // console.log(results.id);
-          // console.log(noteRes.body.id);
+        
           expect(results.id).to.equal(noteRes.body.id);
           expect(results.title).to.equal(noteRes.body.title);
           expect(results.content).to.equal(noteRes.body.content);
           expect(new Date(results.createdAt)).to.eql(new Date(noteRes.body.createdAt));
           expect(new Date(results.updatedAt)).to.eql(new Date(noteRes.body.updatedAt));
+          
         });
-
     });
   });
 
 
   //==================PUT api/notes/id ==============================
-  describe(`update note's fields by id number`, function(){
+  describe('update note\'s fields by id number', function(){
     it('update correct note located its id, and return updated content', function(){
-      const updateNote = {
-        title: 'updated title',
-        content: 'updated content'
-      };
 
+
+      let updateNote= {title: 'hi', content: 'I like Cake'};
       let dbNote;
-      return Note
-        .findOne()
-        .then(function(dbRes) {
-          dbNote= dbRes;
-          updateNote.id = dbRes.id;
+
+      return Promise.all([
+       
+        Tag.findOne({userId: user.id}),
+        Folder.findOne({userId: user.id}), 
+        Note.findOne({userId: user.id})
+      ])
+        .then((results)=>{
+          updateNote.tags = [results[0].id];
+          updateNote.folderId = results[1].id;
+          updateNote.id= results[2].id;
+
+          // console.log(newNote);
           return chai.request(app)
-            .put(`/api/notes/${dbRes.id}`)
+            .put(`/api/notes/${updateNote.id}`)
+            .set('Authorization', `Bearer ${token}`)
             .send(updateNote);
         })
         .then((res)=>{
+          dbNote= res.body;
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res).to.be.a('object');
@@ -189,7 +206,8 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(res.body.content).to.equal(updateNote.content);
           expect(new Date(res.body.createdAt)).to.eql(new Date(dbNote.createdAt));
           return chai.request(app)
-            .get(`/api/notes/${res.body.id}`);
+            .get(`/api/notes/${res.body.id}`)
+            .set('Authorization', `Bearer ${token}`)
         })
         .then((chaiRes)=>{
           expect(chaiRes).to.have.status(200);
@@ -198,7 +216,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(chaiRes.body.title).to.equal(updateNote.title);
           expect(chaiRes.body.id).to.equal(updateNote.id);
           expect(chaiRes.body.content).to.equal(updateNote.content);
-        })
+        });
     });
 
   });
@@ -211,10 +229,11 @@ describe('Connect, createdb, drodb, disconnect', function(){
       let note;
 
       return Note
-        .findOne()
+        .findOne({userId: user.id})
         .then(function(dbNote) {
           note = dbNote;
-          return chai.request(app).delete(`/api/notes/${note.id}`);
+          return chai.request(app).delete(`/api/notes/${dbNote.id}`)
+          .set('Authorization', `Bearer ${token}`)
         })
         .then(function(res) {
           expect(res).to.have.status(204);
