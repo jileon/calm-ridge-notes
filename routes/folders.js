@@ -29,10 +29,17 @@ router.get('/:id', (req,res,next)=>{
   const folderId = req.params.id;
   const userId = req.user.id;
     
-  if (folderId.length !== 24){
-    const message = `${folderId} is not a valid id.`;
-    console.error(message);
-    return res.status(400).send(message);
+  // if (folderId.length !== 24){
+  //   const message = `${folderId} is not a valid id.`;
+  //   console.error(message);
+  //   return res.status(400).send(message);
+  // }
+
+
+  if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
+    const err = new Error(`Folder Id: ${folderId} is not valid`);
+    err.status = 400;
+    return next(err);
   }
 
   //same as Folder.findOne({_id: folderId, userId: userId})** below we are using object destructuring
@@ -99,12 +106,12 @@ router.put(('/:id'), (req,res,next)=>{
     console.error(message);
     return res.status(400).send(message);
   }
-  if (updateId.length !== 24){
-    const message = `${updateId} is not a valid id.`;
-    console.error(message);
-    return res.status(400).send(message);
-  }
 
+  if (updateId && !mongoose.Types.ObjectId.isValid(updateId)) {
+    const err = new Error(`Folder Id: ${updateId} is not valid`);
+    err.status = 400;
+    return next(err);
+  }
 
 
   Folder.findByIdAndUpdate(updateId, {$set:updateFolder}, {new: true})

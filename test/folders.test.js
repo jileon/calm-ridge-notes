@@ -17,7 +17,7 @@ chai.use(chaiHttp);
 
 describe('sanity check' ,function(){
 
-  console.log('Testing Sanity On Folders');
+
   it('true should be true', function(){
     expect(true).to.be.true;
   });
@@ -141,6 +141,19 @@ describe('Connect, createdb, drodb, disconnect', function(){
         //   expect(new Date(res.body.updatedAt)).to.eql(folder.body.updatedAt);
         }); 
     });
+
+
+    it('respond with error for invalid ID', function () {
+      const invalidId = 'doReMi';
+      return chai.request(app)
+        .get(`/api/folders/${invalidId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .then(res => {
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal(`Folder Id: ${invalidId} is not valid`);
+        });
+    });
+
   });
 
   //==================POST api/notes ==============================
@@ -152,6 +165,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
       let newFolderRes;
       return chai.request(app)
         .post('/api/folders')
+        .set('Authorization', `Bearer ${token}`)
         .send(newFolder)
         .then((res)=>{
           newFolderRes = res;
@@ -165,7 +179,7 @@ describe('Connect, createdb, drodb, disconnect', function(){
           //expect(res.headers.location).to.equal(`/api/folders/${res.body.id}`);
           expect(new Date(res.body.createdAt)).to.not.equal(null);
           expect(new Date(res.body.updatedAt)).to.not.equal(null);
-          expect(res.body).to.have.keys('name', 'createdAt', 'updatedAt', 'id');
+          expect(res.body).to.have.keys('name', 'createdAt', 'updatedAt', 'id', 'userId');
           return Folder.findOne({name: res.body.name});
         })
         .then((results)=>{
@@ -188,12 +202,14 @@ describe('Connect, createdb, drodb, disconnect', function(){
     
       let dbFolder;
       return Folder
-        .findOne()
+        .findOne({userId: user.id})
         .then(function(dbRes) {
           dbFolder= dbRes;
-          //updateFolder.id = dbRes.id;
+     
+          //console.log(dbRes);
           return chai.request(app)
             .put(`/api/folders/${dbRes.id}`)
+            .set('Authorization', `Bearer ${token}`)
             .send(updateFolder);
         })
         .then((res)=>{
@@ -203,14 +219,14 @@ describe('Connect, createdb, drodb, disconnect', function(){
           expect(res.body.name).to.equal(updateFolder.name);
           expect(new Date(res.body.createdAt)).to.eql(new Date(dbFolder.createdAt));
           return chai.request(app)
-            .get(`/api/folders/${dbFolder.id}`);
+            .get(`/api/folders/${dbFolder.id}`)
+            .set('Authorization', `Bearer ${token}`);
         })
         .then((chaiRes)=>{
           expect(chaiRes).to.have.status(200);
           expect(chaiRes).to.be.json;
           expect(chaiRes).to.be.a('object');
           expect(chaiRes.body.name).to.equal(updateFolder.name);
-
         });
     });
 
@@ -224,10 +240,11 @@ describe('Connect, createdb, drodb, disconnect', function(){
       let folder;
 
       return Folder
-        .findOne()
+        .findOne({userId: user.id})
         .then(function(dbFolder) {
           folder = dbFolder;
-          return chai.request(app).delete(`/api/folders/${folder.id}`);
+          return chai.request(app).delete(`/api/folders/${folder.id}`)
+            .set('Authorization', `Bearer ${token}`);
         })
         .then(function(res) {
           expect(res).to.have.status(204);
