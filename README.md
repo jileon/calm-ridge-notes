@@ -7,3 +7,6 @@ username: demo
 password: demouser123
 
 ***Work in progress
+
+Front End: jQuery, vanilla JS
+Back End: Node, Express, Mongo, Mongoose
